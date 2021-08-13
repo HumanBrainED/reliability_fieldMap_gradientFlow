@@ -1,5 +1,9 @@
-# Example Package
+# Variability field map and gradient flow 
 
-This is a simple example package. You can use
-[Github-flavored Markdown](https://guides.github.com/features/mastering-markdown/)
-to write your content.
+1. Clone
+
+2. Install
+
+3. Data organization
+
+4. Tutorial
