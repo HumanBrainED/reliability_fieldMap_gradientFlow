@@ -7,5 +7,3 @@
 3. Data organization
 
 4. Tutorial
-
-
