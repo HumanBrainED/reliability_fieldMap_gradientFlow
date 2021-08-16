@@ -116,11 +116,8 @@ def single_fieldmap(cond1w,cond1b,t1color,outpath,lines):
     sns.set(font_scale=3)
     ax.axes.set_xlim([0,0.02])
     ax.axes.set_ylim([0,0.02])
-#     ax.axes.set_xlim([0,0.1])
-#     ax.axes.set_ylim([0,0.1])
     plt.xticks(fontweight='bold',fontsize=20)
     plt.yticks(fontweight='bold',fontsize=20)
-#     ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, shade_lowest, kernel, bw, gridsize, cut, clip, legend, cbar, cbar_ax, cbar_kws, ax,vmin=0,vmax=cmap_max,levels=np.arange(0,cmap_max+.5,0.25))
     ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, shade_lowest, kernel, bw, gridsize, cut, clip, legend, cbar, cbar_ax, cbar_kws, ax,vmin=0,vmax=cmap_max,levels=5,alpha=0.5)
     if lines == 'True':
         ax.plot([1,0],[1,0],color='black',alpha=0.3)

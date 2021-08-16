@@ -48,8 +48,8 @@ def get_yeo_colors():
 
 # Load Yeo 7 network assignments to Glasser 360 parcellation
 def get_yeo_parcels():
-    lhparcels = pd.read_csv('../data/yeo_labels/181Yeo7matchlh.csv').values[1:,2]
-    rhparcels = pd.read_csv('../data/yeo_labels/181Yeo7matchrh.csv').values[1:,2]
+    lhparcels = pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchlh.csv').values[1:,2]
+    rhparcels = pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchrh.csv').values[1:,2]
     allparcels = np.r_[lhparcels,rhparcels]
     return allparcels
 
@@ -85,7 +85,7 @@ def array2mat_tril(data,nodes):
 def icc_cmap():
     from matplotlib.image import imread
     from matplotlib.colors import LinearSegmentedColormap
-    img = imread('../figures/ICC_CBAR.png')
+    img = imread('../misc/cbars/ICC_CBAR.png')
     # img is 30 x 280 but we need just one col
     colors_from_img = img[:, 0, :]
     # commonly cmpas have 256 entries, but since img is 280 px => N=280

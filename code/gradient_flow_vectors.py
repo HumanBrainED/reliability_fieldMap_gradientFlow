@@ -1,5 +1,6 @@
 import numpy as np 
-from variability_utils import vector_cmap, get_yeo_colors, get_yeo_parcels()
+import matplotlib.pyplot as plt
+from variability_utils import vector_cmap, get_yeo_colors, get_yeo_parcels
 
 
 # Convert all angles from 0-90 to 0-360
@@ -131,90 +132,86 @@ def calc_icc_vectors_mean(x0,y0,x1,y1,icc0,icc1,task1name,task2name):
 
 # All Edges:
 
-rvb = vector_cmap()
-yeo_colors = get_yeo_colors()
-allparcels = get_yeo_parcels()
+def gradientFlow_angular_histogram(data,cond0,cond1,num_parc,bin_threshold,title,outname):
+    # Vector plot options:
+    outpath = False
+    vector_type = 'norm_0' # raw, norm, norm_0
+    alpha = 1 # plot option
+    vector_type = 'norm_0'
+    plt.rcParams["axes.edgecolor"] = "0.15"
+    plt.rcParams["axes.linewidth"]  = 1.25
+    alpha = 1
+    task0name = '%s' % (cond0)
+    task1name = '%s' % (cond1)
 
-# Vector plot options:
-outpath = False
-vector_type = 'norm_0' # raw, norm, norm_0
-alpha = 1 # plot option
-vector_type = 'norm_0'
-plt.rcParams["axes.edgecolor"] = "0.15"
-plt.rcParams["axes.linewidth"]  = 1.25
-alpha = 1
-def gradientFlow_angular_histogram(data,cond0,cond1,num_parc,bin_threshold,title,outname)
-        task0name = '%s' % (cond0)
-        task1name = '%s' % (cond1)
+    # Read in data:
+    icc1 = data[cond1]['icc'].astype(float)
+    icc0 = data[cond0]['icc'].astype(float)
+    x1 = data[cond1]['raww'].astype(float)
+    x0 = data[cond0]['raww'].astype(float)
+    y1 = data[cond1]['rawb'].astype(float)
+    y0 = data[cond0]['rawb'].astype(float)
 
-        # Read in data:
-        icc1 = data[cond1]['icc'].astype(float)
-        icc0 = data[cond0]['icc'].astype(float)
-        x1 = data[cond1]['raww'].astype(float)
-        x0 = data[cond0]['raww'].astype(float)
-        y1 = data[cond1]['rawb'].astype(float)
-        y0 = data[cond0]['rawb'].astype(float)
+    # Parcel-wise so create matrices and masks
+    maticc1,icc1mask = array2mat(icc1,num_parc)
+    maticc0,icc0mask = array2mat(icc0,num_parc)
+    matx1,matx1mask = array2mat(x1,num_parc)
+    matx0,matx0mask = array2mat(x0,num_parc)
+    maty1,maty1mask = array2mat(y1,num_parc)
+    maty0,maty0mask = array2mat(y0,num_parc)
 
-        # Parcel-wise so create matrices and masks
-        maticc1,icc1mask = array2mat(icc1,num_parc)
-        maticc0,icc0mask = array2mat(icc0,num_parc)
-        matx1,matx1mask = array2mat(x1,num_parc)
-        matx0,matx0mask = array2mat(x0,num_parc)
-        maty1,maty1mask = array2mat(y1,num_parc)
-        maty0,maty0mask = array2mat(y0,num_parc)
+    # Mask containing good edges for both conditions
+    finalmask = icc0mask*icc1mask*matx1mask*matx0mask*maty1mask*maty0mask
+    maticc1 = maticc1*finalmask
+    maticc0 = maticc0*finalmask
+    matx1 = matx1*finalmask
+    matx0 = matx0*finalmask
+    maty1 = maty1*finalmask
+    maty0 = maty0*finalmask
 
-        # Mask containing good edges for both conditions
-        finalmask = icc0mask*icc1mask*matx1mask*matx0mask*maty1mask*maty0mask
-        maticc1 = maticc1*finalmask
-        maticc0 = maticc0*finalmask
-        matx1 = matx1*finalmask
-        matx0 = matx0*finalmask
-        maty1 = maty1*finalmask
-        maty0 = maty0*finalmask
+    # All upper triangle edges:
+    netx0 = matx0[np.triu_indices(num_parc,1)].flatten()
+    nety0 = maty0[np.triu_indices(num_parc,1)].flatten()
+    netx1 = matx1[np.triu_indices(num_parc,1)].flatten()
+    nety1 = maty1[np.triu_indices(num_parc,1)].flatten()
+    neticc0 = maticc0[np.triu_indices(num_parc,1)].flatten()
+    neticc1 = maticc1[np.triu_indices(num_parc,1)].flatten()
 
-        # All upper triangle edges:
-        netx0 = matx0[np.triu_indices(num_parc,1)].flatten()
-        nety0 = maty0[np.triu_indices(num_parc,1)].flatten()
-        netx1 = matx1[np.triu_indices(num_parc,1)].flatten()
-        nety1 = maty1[np.triu_indices(num_parc,1)].flatten()
-        neticc0 = maticc0[np.triu_indices(num_parc,1)].flatten()
-        neticc1 = maticc1[np.triu_indices(num_parc,1)].flatten()
+    # Calculate vector parameterss
+    df = calc_icc_vectors(np.array(netx0),np.array(nety0),np.array(netx1),np.array(nety1),
+                          np.array(neticc0),np.array(neticc1),task0name,task1name)
+    theta = ang2deg(df)[0]
+    theta = theta[~np.isnan(theta)]
 
-        # Calculate vector parameterss
-        df = calc_icc_vectors(np.array(netx0),np.array(nety0),np.array(netx1),np.array(nety1),
-                              np.array(neticc0),np.array(neticc1),task0name,task1name)
-        theta = ang2deg(df)[0]
-        theta = theta[~np.isnan(theta)]
+    # Setting bins:
+    bins = np.arange(0,361,bin_threshold)
+    a = np.histogram(theta,bins)
 
-        # Setting bins:
-        bins = np.arange(0,361,bin_threshold)
-        a = np.histogram(theta,bins)
+    # Set frequency:
+    height = a[0]/np.sum(a[0])
+    deg_ind = np.radians(a[1][1:])
+    width = .1
+    rmax = np.max(height)*(1+0.1)
 
-        # Set frequency:
-        height = a[0]/np.sum(a[0])
-        deg_ind = np.radians(a[1][1:])
-        width = .1
-        rmax = np.max(height)*(1+0.1)
+    # color list:
+    rvbColors = rvb(np.linspace(0, 1, len(deg_ind)))
 
-        # color list:
-        rvbColors = rvb(np.linspace(0, 1, len(deg_ind)))
-
-        # Plot angular histo:
-        ax = plt.subplot(111, projection='polar')
-        ax.set_rlim(0, rmax)
-        ax.set_rticks(np.round(np.arange(rmax/4., rmax+0.01, rmax/4.),3))
-        ax.set_rlabel_position(-90)
-        ax.bar(x=deg_ind, height=height, width=width, 
-               bottom=0, alpha=1, color = rvbColors, edgecolor = 'black',lw=0.2)
-        ax.bar(x=np.radians([45,135,225,315]), height=10, width=0, 
-               bottom=0, alpha=1, tick_label=['No\nChange','+ Optimal','No\nChange','- Optimal'], 
-               color = 'k')
-        ax.tick_params(axis='both', which='major', pad=20)
-        ax.spines['polar'].set_visible(False)
-        if title:
-            plt.title(title,pad=10)
-        plt.tight_layout()
-        if outname:
-            plt.savefig(outname,dpi=300)
-        plt.show()
+    # Plot angular histo:
+    ax = plt.subplot(111, projection='polar')
+    ax.set_rlim(0, rmax)
+    ax.set_rticks(np.round(np.arange(rmax/4., rmax+0.01, rmax/4.),3))
+    ax.set_rlabel_position(-90)
+    ax.bar(x=deg_ind, height=height, width=width, 
+           bottom=0, alpha=1, color = rvbColors, edgecolor = 'black',lw=0.2)
+    ax.bar(x=np.radians([45,135,225,315]), height=10, width=0, 
+           bottom=0, alpha=1, tick_label=['No\nChange','+ Optimal','No\nChange','- Optimal'], 
+           color = 'k')
+    ax.tick_params(axis='both', which='major', pad=20)
+    ax.spines['polar'].set_visible(False)
+    if title:
+        plt.title(title,pad=10)
+    plt.tight_layout()
+    if outname:
+        plt.savefig(outname,dpi=300)
+    plt.show()
     
