@@ -112,11 +112,11 @@ def load_data(tasks):
     taskname = {}
     for task in tasks:
         data[task] = {'raww':[],'rawb':[],'icc':[],'vartotal':[],'totmask':[],'edges':[]}
-        data[task]['raww'] = pd.read_csv('../data/hcp_trt/icc_output/%s/%s_within_vector.csv' % (task,task)).values[:,1]
-        data[task]['rawb'] = pd.read_csv('../data/hcp_trt/icc_output/%s/%s_between_vector.csv' % (task,task)).values[:,1]
-        data[task]['icc'] = pd.read_csv('../data/hcp_trt/icc_output/%s/%s_icc_vector.csv' % (task,task)).values[:,1]
-        data[task]['vartotal'] = pd.read_csv('../data/hcp_trt/icc_output/%s/%s_vartotal_vector.csv' % (task,task)).values[:,1]
-        data[task]['edges'] = np.loadtxt('../data/hcp_trt/icc_input/%s/y.txt' % (task))
+        data[task]['raww'] = pd.read_csv('../tutorial/example_data/icc_output/%s/%s_within_vector.csv' % (task,task)).values[:,1]
+        data[task]['rawb'] = pd.read_csv('../tutorial/example_data/icc_output/%s/%s_between_vector.csv' % (task,task)).values[:,1]
+        data[task]['icc'] = pd.read_csv('../tutorial/example_data/icc_output/%s/%s_icc_vector.csv' % (task,task)).values[:,1]
+        data[task]['vartotal'] = pd.read_csv('../tutorial/example_data/icc_output/%s/%s_vartotal_vector.csv' % (task,task)).values[:,1]
+        data[task]['edges'] = np.loadtxt('../tutorial/example_data/icc_input/%s/y.txt' % (task))
         taskname[task] = task
         between_ratio = data[task]['rawb']/data[task]['vartotal']
         between_ratio[between_ratio>1] = np.nan

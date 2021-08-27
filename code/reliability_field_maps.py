@@ -4,9 +4,15 @@ import matplotlib.colors as mcolors
 import seaborn as sns
 from scipy import stats
 from seaborn.utils import iqr, _kde_support, remove_na
-
+from six import string_types
+try:
+    import statsmodels.nonparametric.api as smnp
+    _has_statsmodels = True
+except ImportError:
+    _has_statsmodels = False
 # Calculate KDE for field maps:
 def _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip):
+
     """Compute a bivariate kde using scipy."""
     data = np.c_[x, y]
     kde = stats.gaussian_kde(data.T, bw_method=bw)
