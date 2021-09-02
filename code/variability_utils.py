@@ -129,3 +129,39 @@ def load_data(tasks):
         wmask = np.where(~np.isnan(within_ratio)==True)[0]
         data[task]['totmask'] = np.intersect1d(bmask,wmask)
     return data
+
+def plot_surface(vdata,lsurf,rsurf,data_range,cmap,alpha,darkness,symmetric_cmap,outpath,plotname):
+    vmin,vmax = data_range
+    for side in ['left','right']:
+        if side == 'left':
+            surf_array = vdata[0,:10242]
+            surf = lsurf
+        else:
+            surf_array = vdata[0,10242:]
+            surf = rsurf
+        for view in ['lateral','medial']:
+            plt.figure(figsize=(10,15))
+            plt.rcParams['axes.facecolor'] = 'white'
+            _ = plotting.plot_surf(surf, surf_array, 
+                                   hemi=side, view=view,
+                                   bg_on_data = True,
+                                   cmap = cmap, colorbar=True, vmin=vmin, vmax=vmax, 
+                                   avg_method='median',alpha=alpha, darkness=darkness,
+                                   symmetric_cmap=symmetric_cmap)
+#             if outpath:
+#                 plt.savefig('%s/%s_%s_%s.png' % (outpath,plotname,side,view),dpi=300)
+#             plt.close()
+def parcel2vert(glasserlabel,theta_img):
+    numverts = glasserlabel.shape[1]
+    if len(theta_img.shape) >1:
+        numparcels = len(theta_img)
+    else:
+        numparcels = 1
+        theta_img = np.reshape(theta_img,[-1,len(theta_img)])
+    nparc = np.arange(numparcels)
+    data = np.zeros([numparcels,numverts])
+    for parcel in nparc:
+        for plabel in range(int(np.max((glasserlabel)))):
+            p_idx = np.where(glasserlabel[0,:]==plabel+1)[0]
+            data[parcel,p_idx] = theta_img[parcel,plabel]
+    return data
