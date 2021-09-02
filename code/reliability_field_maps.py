@@ -1,19 +1,19 @@
 import numpy as np
 import matplotlib as mpl
+import matplotlib.cm as mcm
 import matplotlib.colors as mcolors
+import pandas as pd
 import seaborn as sns
 from scipy import stats
 from seaborn.utils import iqr, _kde_support, remove_na
+
 from six import string_types
-try:
-    import statsmodels.nonparametric.api as smnp
-    _has_statsmodels = True
-except ImportError:
-    _has_statsmodels = False
+
 # Calculate KDE for field maps:
 def _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip):
 
     """Compute a bivariate kde using scipy."""
+    
     data = np.c_[x, y]
     kde = stats.gaussian_kde(data.T, bw_method=bw)
     data_std = data.std(axis=0, ddof=1)
@@ -76,13 +76,12 @@ def _bivariate_kdeplot(xx1, yy1, z1scale, filled, fill_lowest,
     return ax
 
 
-def single_fieldmap(cond1w,cond1b,t1color,outpath,lines):  
+def single_fieldmap(cond1w,cond1b,t1color,taskcmaps,outpath,lines):  
     import matplotlib.pyplot as plt
     import matplotlib.colors as mcolors
     from scipy.stats import gaussian_kde
     import matplotlib.pyplot as plt
-#     from .reliability_plot_functions import _bivariate_kdeplot 
-#     from .reliability_plot_functions import _scipy_bivariate_kde 
+    
     bw='scott'
     gridsize=300
     cut=10
@@ -107,8 +106,8 @@ def single_fieldmap(cond1w,cond1b,t1color,outpath,lines):
 #     cbar=True
     cbar=False
     cbar_ax=None
-    cbar_kws={'cmap':t1color}
-    our_cmap = plt.get_cmap(t1color)
+    cbar_kws={'cmap':taskcmaps[cond1]}
+    our_cmap = plt.get_cmap(taskcmaps[cond1])
     cmap_max = 1.01
     norm = mcolors.Normalize(vmin=0, vmax=cmap_max)    
     proxy_mappable = mpl.cm.ScalarMappable(cmap=our_cmap, norm=norm)
@@ -132,5 +131,6 @@ def single_fieldmap(cond1w,cond1b,t1color,outpath,lines):
             ax.plot([iccline,0],[1,0],color='black',alpha=0.3)   
     ax = plt.contour(xx1,yy1,normalized,5, colors = contourcolors[cond1])
     plt.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), spacing='proportional', orientation='vertical', pad=.01)
-    plt.savefig(outpath)
+    if outpath == True:
+        plt.savefig(outpath)
     plt.show()
