@@ -76,7 +76,7 @@ def _bivariate_kdeplot(xx1, yy1, z1scale, filled, fill_lowest,
     return ax
     
 # Plot a single field map:
-def field_map(tasks,data,taskcolors,taskcmaps,outpath):
+def field_map(tasks,data,taskcolors,taskcmaps,alpha,lines,outpath):
     import matplotlib.pyplot as plt
     import matplotlib.colors as mcolors
     from scipy.stats import gaussian_kde
@@ -98,14 +98,14 @@ def field_map(tasks,data,taskcolors,taskcmaps,outpath):
         cond1w = cond1w[bothmask]
         cond1b = cond1b[bothmask]
 
-        # Setting to top X percentile
-        perc = np.percentile(data[cond1]['icc'][bothmask],percnum)
-        percmask = np.where(data[cond1]['icc'][bothmask]>perc)[0]
-        cond1w = cond1w[percmask]
-        cond1b = cond1b[percmask]
+#         # Setting to top X percentile
+#         perc = np.percentile(data[cond1]['icc'][bothmask],percnum)
+#         percmask = np.where(data[cond1]['icc'][bothmask]>perc)[0]
+#         cond1w = cond1w[percmask]
+#         cond1b = cond1b[percmask]
 
         bw='scott'
-        gridsize=300
+        gridsize=100
         cut=10
         clip = [(-np.inf, np.inf), (-np.inf, np.inf)]
         shade=True
@@ -119,7 +119,7 @@ def field_map(tasks,data,taskcolors,taskcmaps,outpath):
         vertical=False
         kernel="gau",
         bw="scott"
-        gridsize=300
+        gridsize=100
         cut=10
         clip=None
         legend=True
@@ -144,17 +144,20 @@ def field_map(tasks,data,taskcolors,taskcmaps,outpath):
         ax.axes.set_ylim([0,0.02])
         plt.xticks(fontweight='bold',fontsize=20)
         plt.yticks(fontweight='bold',fontsize=20)
-        ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, shade_lowest, kernel, bw, gridsize, cut, clip, legend, cbar, cbar_ax, cbar_kws, ax,vmin=0,vmax=cmap_max,levels=5,alpha=0.5)
+        ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, shade_lowest, kernel, bw, gridsize, cut, clip, legend, cbar, cbar_ax, cbar_kws, ax,vmin=0,vmax=cmap_max,levels=5,alpha=alpha)
         
         ax.plot([1,0],[1,0],color='black',alpha=0.3)
         for iccline in [0.2,0.4,0.6,0.8]:
             ax.plot([1,0],[iccline,0],color='black',alpha=0.3)
-            ax.plot([iccline,0],[1,0],color='black',alpha=0.3)   
-        ax = plt.contour(xx1,yy1,normalized,5, colors = contourcolors[cond1])
-        plt.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), spacing='proportional', orientation='vertical', pad=.01)
+            ax.plot([iccline,0],[1,0],color='black',alpha=0.3)
+        if lines == True:
+            ax = plt.contour(xx1,yy1,normalized,5, colors = contourcolors[cond1])
+        cbar = plt.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), spacing='proportional', orientation='vertical', pad=.01)
+        cbar.set_label('Density',labelpad=20)
         if outpath == True:
             plt.savefig(outpath)
         plt.show()
+
 
 # Plot field map for each condition in taskcombos in 1 plot for comparison:
 def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,outpath):

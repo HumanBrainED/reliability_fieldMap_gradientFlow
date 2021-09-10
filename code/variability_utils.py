@@ -3,6 +3,8 @@ import matplotlib as mpl
 import matplotlib.cm as mcm
 import matplotlib.colors as mcolors
 import pandas as pd
+import matplotlib.pyplot as plt
+from nilearn import plotting
 
 # Circular colormap for vector angles. Warm and cold colors for positive and negative change.
 def make_colormap(seq):
@@ -151,6 +153,67 @@ def plot_surface(vdata,lsurf,rsurf,data_range,cmap,alpha,darkness,symmetric_cmap
 #             if outpath:
 #                 plt.savefig('%s/%s_%s_%s.png' % (outpath,plotname,side,view),dpi=300)
 #             plt.close()
+
+def plot_surface_comparisons(taskcombos, data, parcellation, surfaces, numparcels, alpha, darkness, data_range,cmap,outpath):
+    import sys
+    import cifti
+    import matplotlib.pyplot as plt
+    sys.path.append('../code')
+    from gradient_flow_vectors import calc_icc_vectors_mean, ang2deg
+    lsurf = surfaces[0]
+    rsurf = surfaces[1]
+    for taskcombo in taskcombos:
+        for posNeg in ['positive','negative']:
+            task1 = taskcombo[0]
+            task2 = taskcombo[1]
+            # Vector angles:
+            mask1 = data[task1]['totmask']
+            mask2 = data[task2]['totmask']
+            bothMask = np.intersect1d(mask1,mask2)
+            icc0 = array2mat(data[task1]['icc'],447)[0]#[bothMask]
+            icc1 = array2mat(data[task2]['icc'],447)[0]#[bothMask]
+            x0 = array2mat(data[task1]['raww'],447)[0]#[bothMask]
+            y0 = array2mat(data[task1]['rawb'],447)[0]#[bothMask]
+            x1 = array2mat(data[task2]['raww'],447)[0]#[bothMask]
+            y1 = array2mat(data[task2]['rawb'],447)[0]#[bothMask]
+            df = calc_icc_vectors_mean(x0,y0,x1,y1,icc0,icc1,task1,task2)
+            plotname =  '%s-%s_%s_vectors' % (task2,task1,posNeg)
+
+            # plot options:
+#             numparcels = 1
+#             alpha = 1
+#             darkness = 0.1
+#             data_range = (0,360)
+            symmetric_cmap = False
+            angVerts = parcel2vert(parcellation,ang2deg(df))
+            posNegMask = parcel2vert(parcellation,icc1-icc0)
+            meandICC = np.mean(posNegMask,0)
+        #         if posNeg == 'positive':
+        #             posNegMask[posNegMask<0] = 0
+        #         else:
+        #             posNegMask[posNegMask>0] = 0
+            if posNeg == 'negative':
+                angVerts[(angVerts>=45) & (angVerts<=225)] = 45
+                angVerts[angVerts==0] = 45
+                meandICC[meandICC> 0]  = 0
+            elif posNeg == 'positive':
+                angVerts[angVerts>=225] = 45
+                angVerts[angVerts<=45] = 45
+                angVerts[angVerts==0] = 45
+                angVerts[np.isnan(angVerts)] = 45
+                meandICC[meandICC< 0]  = 0
+        #         angVerts[0,np.logical_not(mask10k[0].astype(bool))] = 45
+        #         angVerts[0,posNegMask.astype(bool)] = 45
+
+            # Plot angles:
+            plot_surface(angVerts,lsurf,rsurf,data_range,cmap,alpha,darkness,symmetric_cmap,cbarTitle,outpath,'%s-%s_%s_dICC_angle' % (task2,task1,posNeg))
+
+            # ICC Diff:
+            examplecifti, (ax1,ax2) = cifti.read('../misc/surfaces/100206.sulc.10k_fs_LR.dscalar.nii')
+            examplecifti = np.reshape(np.mean(posNegMask,0),[1,posNegMask.shape[1]])
+            plot_surface(np.reshape(meandICC,[1,posNegMask.shape[1]]),lsurf,rsurf,(-.2,.2),'bwr',alpha,darkness,True,cbarTitle,outpath,'%s-%s_%s_iccDiff_070121' % (task2,task1,posNeg))
+    #         cifti.write('%s/%s-%s_iccDiff_070121.dscalar.nii' % (outpath,task2,task1),examplecifti,[ax1,ax2])
+
 def parcel2vert(glasserlabel,theta_img):
     numverts = glasserlabel.shape[1]
     if len(theta_img.shape) >1:
