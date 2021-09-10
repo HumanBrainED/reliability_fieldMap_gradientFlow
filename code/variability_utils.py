@@ -109,17 +109,17 @@ def icc_cmap():
     return my_cmap_r
 
 # Load ICC model output data into dict
-def load_data(tasks):
+def load_data(tasks,path):
     data = {}
     taskname = {}
     for task in tasks:
 #         data[task] = {'raww':[],'rawb':[],'icc':[],'vartotal':[],'totmask':[],'edges':[]}
         data[task] = {'raww':[],'rawb':[],'icc':[],'vartotal':[],'totmask':[]}
-        data[task]['raww'] = pd.read_csv('../tutorial/example_data/icc_output/%s/%s_within_vector.csv' % (task,task)).values[:,1]
-        data[task]['rawb'] = pd.read_csv('../tutorial/example_data/icc_output/%s/%s_between_vector.csv' % (task,task)).values[:,1]
-        data[task]['icc'] = pd.read_csv('../tutorial/example_data/icc_output/%s/%s_icc_vector.csv' % (task,task)).values[:,1]
-        data[task]['vartotal'] = pd.read_csv('../tutorial/example_data/icc_output/%s/%s_vartotal_vector.csv' % (task,task)).values[:,1]
-#         data[task]['edges'] = np.loadtxt('../data/hcp_trt/icc_input/%s/y.txt' % (task))
+        data[task]['raww'] = pd.read_csv('%s/%s/%s_within_vector.csv' % (path,task,task)).values[:,1]
+        data[task]['rawb'] = pd.read_csv('%s/%s/%s_between_vector.csv' % (path,task,task)).values[:,1]
+        data[task]['icc'] = pd.read_csv('%s/%s/%s_icc_vector.csv' % (path,task,task)).values[:,1]
+        data[task]['vartotal'] = pd.read_csv('%s/%s/%s_vartotal_vector.csv' % (path,task,task)).values[:,1]
+#         data[task]['edges'] = np.loadtxt('%s/%s/y.txt' % (path,task))
         taskname[task] = task
         between_ratio = data[task]['rawb']/data[task]['vartotal']
         between_ratio[between_ratio>1] = np.nan
