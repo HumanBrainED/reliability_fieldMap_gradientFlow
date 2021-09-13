@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib as mpl
 import matplotlib.cm as mcm
+import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import pandas as pd
 import seaborn as sns
@@ -160,7 +161,7 @@ def field_map(tasks,data,taskcolors,taskcmaps,alpha,lines,outpath):
 
 
 # Plot field map for each condition in taskcombos in 1 plot for comparison:
-def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,outpath):
+def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath):
     for taskcombo in taskcombos:
         plt.figure(figsize=(10,10))
         sns.set_style('white')
@@ -188,12 +189,6 @@ def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,outpath):
             bothmask = np.intersect1d(data[cond1]['totmask'],data[cond1]['totmask'])
             cond1w = cond1w[bothmask]
             cond1b = cond1b[bothmask]
-
-            # Setting to top X percentile
-            perc = np.percentile(data[cond1]['icc'][bothmask],percnum)
-            percmask = np.where(data[cond1]['icc'][bothmask]>perc)[0]
-            cond1w = cond1w[percmask]
-            cond1b = cond1b[percmask]
             #### Edit end:
 
             bw='scott'
@@ -221,17 +216,14 @@ def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,outpath):
             cbar_ax=None
             cbar_kws={'cmap':taskcmaps[cond1]}
             our_cmap = plt.get_cmap(taskcmaps[cond1])
-            if alignment == '':
-                cmap_max = 1.01# was 60
-            else:
-                cmap_max = 1.01
+            cmap_max = 1.01
             norm = mcolors.Normalize(vmin=0, vmax=cmap_max)    
             proxy_mappable = mpl.cm.ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(normalized)   
             ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, 
                                     shade_lowest, kernel, bw, gridsize, 
                                     cut, clip, legend, cbar, cbar_ax, cbar_kws, 
-                                    ax,vmin=0,vmax=cmap_max,levels=5,alpha=1,
+                                    ax,vmin=0,vmax=cmap_max,levels=5,alpha=alpha,
                                    linewidths=5)
         if lines == True:
             ax.plot([1,0],[1,0],color='black',alpha=0.3)
