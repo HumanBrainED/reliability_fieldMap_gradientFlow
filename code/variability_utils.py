@@ -109,28 +109,28 @@ def icc_cmap():
     return my_cmap_r
 
 # Load ICC model output data into dict
-def load_data(tasks,path,resultsBasename):
+def load_data(tasks,path):
     data = {}
     for task in tasks:
         
         # Load in ICC model outputs:
         data[task] = {'raww':[],'ratw':[],'ratw':[],'ratb':[],'icc':[],'vartotal':[],'totmask':[]}
-        data[task]['raww'] = pd.read_csv('%s/%s/%s_intra-individual_vector.csv' % (path,task,resultsBasename)).values[:,1]
-        data[task]['rawb'] = pd.read_csv('%s/%s/%s_inter-individual_vector.csv' % (path,task,resultsBasename)).values[:,1]
-        data[task]['icc'] = pd.read_csv('%s/%s/%s_icc_vector.csv' % (path,task,resultsBasename)).values[:,1]
-        data[task]['vartotal'] = pd.read_csv('%s/%s/%s_vartotal_vector.csv' % (path,task,resultsBasename)).values[:,1]
+        data[task]['raww'] = pd.read_csv('%s/%s/%s_intra-individual_vector.csv' % (path,task,task)).values[:,1]
+        data[task]['rawb'] = pd.read_csv('%s/%s/%s_inter-individual_vector.csv' % (path,task,task)).values[:,1]
+        data[task]['icc'] = pd.read_csv('%s/%s/%s_icc_vector.csv' % (path,task,task)).values[:,1]
+        data[task]['vartotal'] = pd.read_csv('%s/%s/%s_vartotal_vector.csv' % (path,task,task)).values[:,1]
 
         # Get ratio of variation to total variation:
         # Failed inter-individual variation edges:
         interRatio = data[task]['rawb']/data[task]['vartotal']
         interRatio[interRatio>1] = np.nan
-        interUtri = np.asarray(between_ratio[np.triu_indices(len(between_ratio),1)])
+        interUtri = np.asarray(interRatio[np.triu_indices(len(interRatio),1)])
         data[task]['ratb'] = interUtri
         interMask = np.where(~np.isnan(interRatio)==True)[0] # Mask of failed inter-individual variation failed edges
         # Failed intra-individual variation edges:
         intraRatio = data[task]['raww']/data[task]['vartotal']
         intraRatio[intraRatio>1] = np.nan
-        intraUtri = np.asarray(within_ratio[np.triu_indices(len(within_ratio),1)])
+        intraUtri = np.asarray(intraRatio[np.triu_indices(len(intraRatio),1)])
         data[task]['ratw'] = intraUtri
         intraMask = np.where(~np.isnan(intraRatio)==True)[0] # Mask of failed intra-individual variation failed edges
         
