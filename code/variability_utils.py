@@ -111,35 +111,41 @@ def icc_cmap():
 # Load ICC model output data into dict
 def load_data(tasks,path,resultsBasename):
     data = {}
-    taskname = {}
     for task in tasks:
-#         data[task] = {'raww':[],'rawb':[],'icc':[],'vartotal':[],'totmask':[],'edges':[]}
-        data[task] = {'raww':[],'rawb':[],'icc':[],'vartotal':[],'totmask':[]}
-        data[task]['raww'] = pd.read_csv('%s/%s/%s_within_vector.csv' % (path,task,resultsBasename)).values[:,1]
-        data[task]['rawb'] = pd.read_csv('%s/%s/%s_between_vector.csv' % (path,task,resultsBasename)).values[:,1]
+        
+        # Load in ICC model outputs:
+        data[task] = {'raww':[],'ratw':[],'ratw':[],'ratb':[],'icc':[],'vartotal':[],'totmask':[]}
+        data[task]['raww'] = pd.read_csv('%s/%s/%s_intra-individual_vector.csv' % (path,task,resultsBasename)).values[:,1]
+        data[task]['rawb'] = pd.read_csv('%s/%s/%s_inter-individual_vector.csv' % (path,task,resultsBasename)).values[:,1]
         data[task]['icc'] = pd.read_csv('%s/%s/%s_icc_vector.csv' % (path,task,resultsBasename)).values[:,1]
         data[task]['vartotal'] = pd.read_csv('%s/%s/%s_vartotal_vector.csv' % (path,task,resultsBasename)).values[:,1]
-#         data[task]['edges'] = np.loadtxt('%s/%s/y.txt' % (path,task))
-        taskname[task] = task
-        between_ratio = data[task]['rawb']/data[task]['vartotal']
-        between_ratio[between_ratio>1] = np.nan
-    #     between_utri = np.asarray(between_ratio[np.triu_indices(len(between_ratio),1)])
-        bmask = np.where(~np.isnan(between_ratio)==True)[0]
-        within_ratio = data[task]['raww']/data[task]['vartotal']
-        within_ratio[within_ratio>1] = np.nan
-    #     within_utri = np.asarray(within_ratio[np.triu_indices(len(within_ratio),1)])
-        wmask = np.where(~np.isnan(within_ratio)==True)[0]
-        data[task]['totmask'] = np.intersect1d(bmask,wmask)
+
+        # Get ratio of variation to total variation:
+        # Failed inter-individual variation edges:
+        interRatio = data[task]['rawb']/data[task]['vartotal']
+        interRatio[interRatio>1] = np.nan
+        interUtri = np.asarray(between_ratio[np.triu_indices(len(between_ratio),1)])
+        data[task]['ratb'] = interUtri
+        interMask = np.where(~np.isnan(interRatio)==True)[0] # Mask of failed inter-individual variation failed edges
+        # Failed intra-individual variation edges:
+        intraRatio = data[task]['raww']/data[task]['vartotal']
+        intraRatio[intraRatio>1] = np.nan
+        intraUtri = np.asarray(within_ratio[np.triu_indices(len(within_ratio),1)])
+        data[task]['ratw'] = intraUtri
+        intraMask = np.where(~np.isnan(intraRatio)==True)[0] # Mask of failed intra-individual variation failed edges
+        
+        # Mask of all failed edges including intra- and inter-individual variation:
+        data[task]['totmask'] = np.intersect1d(interMask,intraMask)
     return data
 
-def plot_surface(vdata,lsurf,rsurf,data_range,cmap,alpha,darkness,symmetric_cmap,outpath,plotname):
+def plot_surface(vdata,lsurf,rsurf,numVertices,data_range,cmap,alpha,darkness,symmetric_cmap,outpath,plotname):
     vmin,vmax = data_range
     for side in ['left','right']:
         if side == 'left':
-            surf_array = vdata[0,:10242]
+            surf_array = vdata[0,:numVertices]
             surf = lsurf
         else:
-            surf_array = vdata[0,10242:]
+            surf_array = vdata[0,numVertices:]
             surf = rsurf
         for view in ['lateral','medial']:
             plt.figure(figsize=(10,15))
@@ -154,7 +160,7 @@ def plot_surface(vdata,lsurf,rsurf,data_range,cmap,alpha,darkness,symmetric_cmap
 #                 plt.savefig('%s/%s_%s_%s.png' % (outpath,plotname,side,view),dpi=300)
 #             plt.close()
 
-def plot_surface_comparisons(taskcombos, data, parcellation, surfaces, numparcels, alpha, darkness, data_range,cmap,outpath):
+def plot_surface_comparisons(taskcombos,data,parcellation, surfaces, numparcels, alpha, darkness, data_range,cmap,outpath):
     import sys
     import cifti
     import matplotlib.pyplot as plt
@@ -170,28 +176,22 @@ def plot_surface_comparisons(taskcombos, data, parcellation, surfaces, numparcel
             mask1 = data[task1]['totmask']
             mask2 = data[task2]['totmask']
             bothMask = np.intersect1d(mask1,mask2)
-            icc0 = array2mat(data[task1]['icc'],447)[0]#[bothMask]
-            icc1 = array2mat(data[task2]['icc'],447)[0]#[bothMask]
-            x0 = array2mat(data[task1]['raww'],447)[0]#[bothMask]
-            y0 = array2mat(data[task1]['rawb'],447)[0]#[bothMask]
-            x1 = array2mat(data[task2]['raww'],447)[0]#[bothMask]
-            y1 = array2mat(data[task2]['rawb'],447)[0]#[bothMask]
+            icc0 = array2mat(data[task1]['icc'],447)[0]
+            icc1 = array2mat(data[task2]['icc'],447)[0]
+            x0 = array2mat(data[task1]['raww'],447)[0]
+            y0 = array2mat(data[task1]['rawb'],447)[0]
+            x1 = array2mat(data[task2]['raww'],447)[0]
+            y1 = array2mat(data[task2]['rawb'],447)[0]
             df = calc_icc_vectors_mean(x0,y0,x1,y1,icc0,icc1,task1,task2)
             plotname =  '%s-%s_%s_vectors' % (task2,task1,posNeg)
 
-            # plot options:
-#             numparcels = 1
-#             alpha = 1
-#             darkness = 0.1
-#             data_range = (0,360)
             symmetric_cmap = False
             angVerts = parcel2vert(parcellation,ang2deg(df))
             posNegMask = parcel2vert(parcellation,icc1-icc0)
             meandICC = np.mean(posNegMask,0)
-        #         if posNeg == 'positive':
-        #             posNegMask[posNegMask<0] = 0
-        #         else:
-        #             posNegMask[posNegMask>0] = 0
+            ###################
+            # Do this better: #
+            ###################
             if posNeg == 'negative':
                 angVerts[(angVerts>=45) & (angVerts<=225)] = 45
                 angVerts[angVerts==0] = 45
@@ -202,8 +202,6 @@ def plot_surface_comparisons(taskcombos, data, parcellation, surfaces, numparcel
                 angVerts[angVerts==0] = 45
                 angVerts[np.isnan(angVerts)] = 45
                 meandICC[meandICC< 0]  = 0
-        #         angVerts[0,np.logical_not(mask10k[0].astype(bool))] = 45
-        #         angVerts[0,posNegMask.astype(bool)] = 45
 
             # Plot angles:
             plot_surface(angVerts,lsurf,rsurf,data_range,cmap,alpha,darkness,symmetric_cmap,cbarTitle,outpath,'%s-%s_%s_dICC_angle' % (task2,task1,posNeg))
