@@ -106,35 +106,40 @@ def field_map(tasks,data,taskcolors,taskcmaps,alpha,lines,outpath):
 #         cond1b = cond1b[percmask]
 
         bw='scott'
+        vertical=False
+        kernel="gau"
+        legend=True
+        cumulative=False
+        shade_lowest=False
+        cbar=False
+        cbar_ax=None
         gridsize=100
         cut=10
         clip = [(-np.inf, np.inf), (-np.inf, np.inf)]
         shade=True
         filled=True
         fill_lowest=False
+        
+        # Kde distribution:
         xx1, yy1, z1 = _scipy_bivariate_kde(cond1w, cond1b, bw, gridsize, cut, clip)
+        
+        # Scaling and normalization so that field maps are comparable:
         scaler = float(1000)
         z1scale = scaler*z1/np.sum(z1)
         normalized = (z1scale-np.min(z1scale))/(np.max(z1scale)-np.min(z1scale))
-        shade=True
-        vertical=False
-        kernel="gau",
-        bw="scott"
-        gridsize=100
-        cut=10
+        
+        # Reset clip for actual kdeplot:
         clip=None
-        legend=True
-        cumulative=False
-        shade_lowest=False
-        cbar=False
-        cbar_ax=None
+        
+        # Set colorbar for scaled density plot:
         cbar_kws={'cmap':taskcmaps[cond1]}
         our_cmap = plt.get_cmap(taskcmaps[cond1])
         cmap_max = 1.01
         norm = mcolors.Normalize(vmin=0, vmax=cmap_max)    
         proxy_mappable = mpl.cm.ScalarMappable(cmap=our_cmap, norm=norm)
         proxy_mappable.set_array(normalized)   
-
+        
+        # Figure plot:
         sns.set_style('white')    
         plt.figure(figsize=(12,10))
         ax=plt.gca()
@@ -144,7 +149,9 @@ def field_map(tasks,data,taskcolors,taskcmaps,alpha,lines,outpath):
         ax.axes.set_xlim([0,0.02])
         ax.axes.set_ylim([0,0.02])
         plt.xticks(fontweight='bold',fontsize=20)
+        plt.xlabel('Intra-individual Variation',labelpad=20)
         plt.yticks(fontweight='bold',fontsize=20)
+        plt.ylabel('Inter-individual Variation',labelpad=20)
         ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, shade_lowest, kernel, bw, gridsize, cut, clip, legend, cbar, cbar_ax, cbar_kws, ax,vmin=0,vmax=cmap_max,levels=5,alpha=alpha)
         
         ax.plot([1,0],[1,0],color='black',alpha=0.3)
@@ -192,28 +199,32 @@ def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath):
             #### Edit end:
 
             bw='scott'
-            gridsize=300
+            gridsize=100
             cut=10
             clip = [(-np.inf, np.inf), (-np.inf, np.inf)]
-            shade=True
-            filled=True
-            fill_lowest=False
-            xx1, yy1, z1 = _scipy_bivariate_kde(cond1w, cond1b, bw, gridsize, cut, clip)
-            scaler = float(1000)
-            z1scale = scaler*z1/np.sum(z1)
-            normalized = (z1scale-np.min(z1scale))/(np.max(z1scale)-np.min(z1scale))
-            shade=False
-            vertical=False
-            kernel="gau",
-            bw="scott"
-            gridsize=300
-            cut=10
-            clip=None
             legend=True
             cumulative=False
+            shade=False
             shade_lowest=False
             cbar=False
             cbar_ax=None
+            filled=True
+            fill_lowest=False
+            vertical=False
+            kernel="gau"
+            
+            # Kde distribution:
+            xx1, yy1, z1 = _scipy_bivariate_kde(cond1w, cond1b, bw, gridsize, cut, clip)
+            
+            # Scaling and normalization so that field maps are comparable:
+            scaler = float(1000)
+            z1scale = scaler*z1/np.sum(z1)
+            normalized = (z1scale-np.min(z1scale))/(np.max(z1scale)-np.min(z1scale))
+            
+            # Reset clip for actual kdeplot:
+            clip=None
+            
+            # Set colorbar for scaled density plot:
             cbar_kws={'cmap':taskcmaps[cond1]}
             our_cmap = plt.get_cmap(taskcmaps[cond1])
             cmap_max = 1.01
@@ -225,6 +236,8 @@ def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath):
                                     cut, clip, legend, cbar, cbar_ax, cbar_kws, 
                                     ax,vmin=0,vmax=cmap_max,levels=5,alpha=alpha,
                                    linewidths=5)
+        plt.xlabel('Intra-individual Variation',labelpad=20)
+        plt.ylabel('Inter-individual Variation',labelpad=20)
         if lines == True:
             ax.plot([1,0],[1,0],color='black',alpha=0.3)
             for iccline in [0.2,0.4,0.6,0.8]:

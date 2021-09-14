@@ -1,6 +1,6 @@
 import numpy as np 
 import matplotlib.pyplot as plt
-from variability_utils import vector_cmap, get_yeo_colors, get_yeo_parcels
+from variability_utils import *
 
 
 # Convert all angles from 0-90 to 0-360
@@ -132,7 +132,8 @@ def calc_icc_vectors_mean(x0,y0,x1,y1,icc0,icc1,task1name,task2name):
 
 # Gradient flow angular histogram plot:
 def gradient_flow_histogram(tasks,data,vector_type,num_parc,
-                            bin_threshold,title,outpath):
+                            bin_threshold,vector_cmap,title,outpath):
+    
     import matplotlib as mpl
     mpl.rcParams.update(mpl.rcParamsDefault)
     plt.rcParams["axes.edgecolor"] = "0.15"
@@ -191,7 +192,7 @@ def gradient_flow_histogram(tasks,data,vector_type,num_parc,
             rmax = np.max(height)*(1+0.1)
 
             # color list:
-            rvbColors = rvb(np.linspace(0, 1, len(deg_ind)))
+            rvbColors = vector_cmap(np.linspace(0, 1, len(deg_ind)))
 
             # Plot angular histo:
             ax = plt.subplot(111, projection='polar')

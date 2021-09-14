@@ -156,7 +156,7 @@ def load_data(task,csvDict):
     data['totmask'] = np.intersect1d(interMask,intraMask)
     return data
 
-def plot_surface(vdata,lsurf,rsurf,numVertices,data_range,cmap,alpha,darkness,symmetric_cmap,outpath,plotname):
+def plot_surface(vdata,lsurf,rsurf,numVertices,data_range,cmap,alpha,darkness,cbar,symmetric_cmap,outpath,plotname):
     vmin,vmax = data_range
     for side in ['left','right']:
         if side == 'left':
@@ -171,7 +171,7 @@ def plot_surface(vdata,lsurf,rsurf,numVertices,data_range,cmap,alpha,darkness,sy
             _ = plotting.plot_surf(surf, surf_array, 
                                    hemi=side, view=view,
                                    bg_on_data = True,
-                                   cmap = cmap, colorbar=True, vmin=vmin, vmax=vmax, 
+                                   cmap = cmap, colorbar=cbar, vmin=vmin, vmax=vmax, 
                                    avg_method='median',alpha=alpha, darkness=darkness,
                                    symmetric_cmap=symmetric_cmap)
 #             if outpath:
@@ -203,7 +203,7 @@ def plot_surface_comparisons(taskcombos,data,parcellation, surfaces, numparcels,
             df = calc_icc_vectors_mean(x0,y0,x1,y1,icc0,icc1,task1,task2)
             plotname =  '%s-%s_%s_vectors' % (task2,task1,posNeg)
 
-            symmetric_cmap = False
+            
             angVerts = parcel2vert(parcellation,ang2deg(df))
             posNegMask = parcel2vert(parcellation,icc1-icc0)
             meandICC = np.mean(posNegMask,0)
@@ -222,12 +222,18 @@ def plot_surface_comparisons(taskcombos,data,parcellation, surfaces, numparcels,
                 meandICC[meandICC< 0]  = 0
 
             # Plot angles:
-            plot_surface(angVerts,lsurf,rsurf,data_range,cmap,alpha,darkness,symmetric_cmap,cbarTitle,outpath,'%s-%s_%s_dICC_angle' % (task2,task1,posNeg))
-
+            numVertices = int(angVerts.shape[1]/2.)
+            symmetric_cmap = False
+            plot_surface(angVerts,lsurf,rsurf,numVertices,data_range,cmap,alpha,
+                         darkness,symmetric_cmap,False,outpath,'%s-%s_%s_dICC_angle' % (task2,task1,posNeg))
             # ICC Diff:
             examplecifti, (ax1,ax2) = cifti.read('../misc/surfaces/100206.sulc.10k_fs_LR.dscalar.nii')
             examplecifti = np.reshape(np.mean(posNegMask,0),[1,posNegMask.shape[1]])
-            plot_surface(np.reshape(meandICC,[1,posNegMask.shape[1]]),lsurf,rsurf,(-.2,.2),'bwr',alpha,darkness,True,cbarTitle,outpath,'%s-%s_%s_iccDiff_070121' % (task2,task1,posNeg))
+            iccDiffVector = np.reshape(meandICC,[1,posNegMask.shape[1]])
+            numVertices = int(iccDiffVector.shape[1]/2.)
+            symmetric_cmap = True
+            plot_surface(iccDiffVector,lsurf,rsurf,numVertices,(-.2,.2),'bwr',alpha,
+                         darkness,symmetric_cmap,True,outpath,'%s-%s_%s_iccDiff_070121' % (task2,task1,posNeg))
     #         cifti.write('%s/%s-%s_iccDiff_070121.dscalar.nii' % (outpath,task2,task1),examplecifti,[ax1,ax2])
 
 def parcel2vert(glasserlabel,theta_img):
