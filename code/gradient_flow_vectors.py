@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from variability_utils import *
 
-# take outr matrix to outside func()
+# take out matrix to outside func()
 # Convert all angles from 0-90 to 0-360
 def ang2deg(df):
     numnodes0 = 1 # Parcel-wise discriminability so only 1 array of 360
