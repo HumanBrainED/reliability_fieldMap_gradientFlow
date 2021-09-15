@@ -134,7 +134,7 @@ def field_map(tasks,data,taskcolors,taskcmaps,alpha,lines,outpath):
         # Set colorbar for scaled density plot:
         cbar_kws={'cmap':taskcmaps[cond1]}
         our_cmap = plt.get_cmap(taskcmaps[cond1])
-        cmap_max = 1.01
+        cmap_max = 1.00001
         norm = mcolors.Normalize(vmin=0, vmax=cmap_max)    
         proxy_mappable = mpl.cm.ScalarMappable(cmap=our_cmap, norm=norm)
         proxy_mappable.set_array(normalized)   
@@ -165,31 +165,34 @@ def field_map(tasks,data,taskcolors,taskcmaps,alpha,lines,outpath):
         if outpath == True:
             plt.savefig(outpath)
         plt.show()
-
-
+        
 # Plot field map for each condition in taskcombos in 1 plot for comparison:
-def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath):
+def plot_field_map(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath,
+                      cbar_option=True,figSize=(12,10),xlim=(0,0.025),ylim=(0,0.025),
+                     shade=True,thr=0.0001):
     for taskcombo in taskcombos:
-        plt.figure(figsize=(10,10))
+        plt.figure(figsize=(figSize[0],figSize[1]))
         sns.set_style('white')
         ax=plt.gca()
         mpl.rcParams['font.weight'] = 'bold'
         mpl.rcParams['font.size'] = 1
         sns.set(font_scale=3)
-        ax.axes.set_xlim([0,0.025])
-        ax.axes.set_ylim([0,0.025])
+        ax.axes.set_xlim([xlim[0],xlim[1]])
+        ax.axes.set_ylim([ylim[0],ylim[1]])
         plt.xticks(fontweight='bold',fontsize=20)
         plt.yticks(fontweight='bold',fontsize=20)
+        plt.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+        plt.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
         ###
 
-        for cond1 in taskcombo:
+        for num,cond1 in enumerate(taskcombo):
             print(cond1)
             t1color = taskcolors[cond1]
             exec('colors1 = plt.cm.%s(np.linspace(0,1,128))' % taskcmaps[cond1])
             cond1w = data[cond1]['raww'].copy()
             cond1b = data[cond1]['rawb'].copy()
-            wmask1 = np.where((cond1w != 0) & (cond1w <= 0.015))[0]
-            bmask1 = np.where((cond1b != 0) & (cond1b <= 0.015))[0]
+            wmask1 = np.where(cond1w > thr)[0]
+            bmask1 = np.where(cond1b > thr)[0]
             cond1totmask = np.intersect1d(bmask1,wmask1)
 
             # Mask b/w and w/in values for each condition
@@ -204,7 +207,7 @@ def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath):
             clip = [(-np.inf, np.inf), (-np.inf, np.inf)]
             legend=True
             cumulative=False
-            shade=False
+            shade=shade
             shade_lowest=False
             cbar=False
             cbar_ax=None
@@ -227,7 +230,7 @@ def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath):
             # Set colorbar for scaled density plot:
             cbar_kws={'cmap':taskcmaps[cond1]}
             our_cmap = plt.get_cmap(taskcmaps[cond1])
-            cmap_max = 1.01
+            cmap_max = 1.00001
             norm = mcolors.Normalize(vmin=0, vmax=cmap_max)    
             proxy_mappable = mpl.cm.ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(normalized)   
@@ -236,14 +239,21 @@ def field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath):
                                     cut, clip, legend, cbar, cbar_ax, cbar_kws, 
                                     ax,vmin=0,vmax=cmap_max,levels=5,alpha=alpha,
                                    linewidths=5)
-        plt.xlabel('Intra-individual Variation',labelpad=20)
-        plt.ylabel('Inter-individual Variation',labelpad=20)
+#             if lines == True:
+#                 ax = plt.contour(xx1,yy1,normalized,5, colors = taskcolors[cond1])
+            if cbar_option == True:
+                print(len(taskcombo),num)
+                cbar = plt.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), spacing='proportional', orientation='vertical', pad=.01)
+#                 if (len(taskcombo) >= 1) & (num == len(taskcombo)-1):
+                if num == 0:
+                    cbar.set_label('Density',labelpad=20)
+                    
         if lines == True:
-            ax.plot([1,0],[1,0],color='black',alpha=0.3)
+            plt.plot([1,0],[1,0],color='black',alpha=0.3,zorder=0)
             for iccline in [0.2,0.4,0.6,0.8]:
-                ax.plot([1,0],[iccline,0],color='black',alpha=0.3)
-                ax.plot([iccline,0],[1,0],color='black',alpha=0.3)    
+                plt.plot([1,0],[iccline,0],color='black',alpha=0.3,zorder=len(taskcombos)+1)
+                plt.plot([iccline,0],[1,0],color='black',alpha=0.3,zorder=len(taskcombos)+1) 
+                
         if outpath == True:
             plt.savefig('../figures/shortpaper/fieldmaps/%s_%s_perc%s_fieldmap_nogsr_front_contour_070121_time_1200-600.png' % (taskcombo[0],taskcombo[1],percnum),dpi=300)
-        plt.show()        
-        
+        plt.show()   

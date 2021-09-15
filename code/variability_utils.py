@@ -108,33 +108,6 @@ def icc_cmap():
     my_cmap_r = reverse_colourmap(my_cmap)
     return my_cmap_r
 
-# # Load ICC model output data into dict
-# def load_data(tasks,path):
-#     data = {}
-#     for task in tasks:
-#         # Load in ICC model outputs:
-#         data[task] = {'raww':[],'ratw':[],'ratw':[],'ratb':[],'icc':[],'vartotal':[],'totmask':[]}
-#         data[task]['raww'] = pd.read_csv('%s/%s/%s_intra-individual_vector.csv' % (path,task,task)).values[:,1]
-#         data[task]['rawb'] = pd.read_csv('%s/%s/%s_inter-individual_vector.csv' % (path,task,task)).values[:,1]
-#         data[task]['icc'] = pd.read_csv('%s/%s/%s_icc_vector.csv' % (path,task,task)).values[:,1]
-#         data[task]['vartotal'] = pd.read_csv('%s/%s/%s_vartotal_vector.csv' % (path,task,task)).values[:,1]
-#         # Get ratio of variation to total variation:
-#         # Failed inter-individual variation edges:
-#         interRatio = data[task]['rawb']/data[task]['vartotal']
-#         interRatio[interRatio>1] = np.nan
-#         interUtri = np.asarray(interRatio[np.triu_indices(len(interRatio),1)])
-# #         data[task]['ratb'] = interUtri
-#         interMask = np.where(~np.isnan(interRatio)==True)[0] # Mask of failed inter-individual variation failed edges
-#         # Failed intra-individual variation edges:
-#         intraRatio = data[task]['raww']/data[task]['vartotal']
-#         intraRatio[intraRatio>1] = np.nan
-#         intraUtri = np.asarray(intraRatio[np.triu_indices(len(intraRatio),1)])
-# #         data[task]['ratw'] = intraUtri
-#         intraMask = np.where(~np.isnan(intraRatio)==True)[0] # Mask of failed intra-individual variation failed edges
-#         # Mask of all failed edges including intra- and inter-individual variation:
-#         data[task]['totmask'] = np.intersect1d(interMask,intraMask)
-#     return data
-
 # Load ICC model output data into dict
 def load_data(task,csvDict):
     data = {}
