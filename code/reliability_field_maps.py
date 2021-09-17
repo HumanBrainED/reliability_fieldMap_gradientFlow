@@ -167,11 +167,8 @@ def _bivariate_kdeplot(xx1, yy1, z1scale, filled, fill_lowest,
 #         plt.show()
 
 
-# Take threshold out: put function input final preprocessed version.
-# if for datamask=None
-# elif: 
 # Plot field map for each condition in taskcombos in 1 plot for comparison:
-def plot_field_map(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath,
+def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath,
                       cbar_option=True,figSize=(12,10),xlim=(0,0.025),ylim=(0,0.025),
                      shade=True,thr=0.0001):
     for taskcombo in taskcombos:
@@ -183,8 +180,8 @@ def plot_field_map(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath,
         sns.set(font_scale=3)
         ax.axes.set_xlim([xlim[0],xlim[1]])
         ax.axes.set_ylim([ylim[0],ylim[1]])
-        plt.xticks(fontweight='bold',fontsize=20)
-        plt.yticks(fontweight='bold',fontsize=20)
+        plt.xticks([],fontweight='bold',fontsize=20)
+        plt.yticks([],fontweight='bold',fontsize=20)
         plt.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
         plt.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
         ###
@@ -261,3 +258,88 @@ def plot_field_map(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath,
         if outpath == True:
             plt.savefig('../figures/shortpaper/fieldmaps/%s_%s_perc%s_fieldmap_nogsr_front_contour_070121_time_1200-600.png' % (taskcombo[0],taskcombo[1],percnum),dpi=300)
         plt.show()   
+
+def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,
+                     overlay=False,cbar_option=True,figSize=(12,10),xyLim=95,shade=True,addContourLines=True):
+    
+    plt.figure(figsize=(figSize[0],figSize[1]))
+    sns.set_style('white')
+    ax=plt.gca()
+    mpl.rcParams['font.weight'] = 'bold'
+    mpl.rcParams['font.size'] = 1
+    sns.set(font_scale=3)
+    
+    if int(xyLim):
+        xperc = np.percentile(x,xyLim)
+        yperc = np.percentile(y,xyLim)
+        xy_lim = np.max([xperc,yperc])
+        xyVals = (0,xy_lim)
+    elif type(xyLim) == 'tuple':
+        xyVals = (xyLim[0],xyLim[1])
+
+    ax.axes.set_xlim([xyVals[0],xyVals[1]])
+    ax.axes.set_ylim([xyVals[0],xyVals[1]])
+    plt.xticks(fontweight='bold',fontsize=20)
+    plt.yticks(fontweight='bold',fontsize=20)
+    plt.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+    plt.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+    bw='scott'
+    gridsize=100
+    cut=10
+    clip = [(-np.inf, np.inf), (-np.inf, np.inf)]
+    legend=True
+    cumulative=False
+    shade=shade
+    shade_lowest=False
+    cbar=False
+    cbar_ax=None
+    filled=True
+    fill_lowest=False
+    vertical=False
+    kernel="gau"
+
+    # Kde distribution:
+    xx1, yy1, z1 = _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip)
+
+    # Scaling and normalization so that field maps are comparable:
+    scaler = float(1000)
+    z1scale = scaler*z1/np.sum(z1)
+    normalized = (z1scale-np.min(z1scale))/(np.max(z1scale)-np.min(z1scale))
+    
+    # Find max x,y density:
+    maxXY = np.where(normalized == np.max(normalized))
+    print(maxXY)
+    # Reset clip for actual kdeplot:
+    clip=None
+
+    # Set colorbar for scaled density plot:
+    cbar_kws={'cmap':taskcmap}
+    our_cmap = plt.get_cmap(taskcmap)
+    cmap_max = 1.00001
+    norm = mcolors.Normalize(vmin=0, vmax=cmap_max)    
+    proxy_mappable = mpl.cm.ScalarMappable(cmap=our_cmap, norm=norm)
+    proxy_mappable.set_array(normalized)   
+    ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, 
+                            shade_lowest, kernel, bw, gridsize, 
+                            cut, clip, legend, cbar, cbar_ax, cbar_kws, 
+                            ax,vmin=0,vmax=cmap_max,levels=5,alpha=alpha,
+                           linewidths=5)
+    if addContourLines == True:
+        ax = plt.contour(xx1,yy1,normalized,5,colors = taskcolor)
+    if cbar_option == True:
+        cbar = plt.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), spacing='proportional', orientation='vertical', pad=.01)
+        cbar.set_label('Density',labelpad=20)
+
+    if lines == True:
+        plt.plot([1,0],[1,0],color='black',alpha=0.3,zorder=0)
+        for iccline in [0.2,0.4,0.6,0.8]:
+#             plt.plot([1,0],[iccline,0],color='black',alpha=0.3,zorder=len(taskcombos)+1)
+#             plt.plot([iccline,0],[1,0],color='black',alpha=0.3,zorder=len(taskcombos)+1) 
+            plt.plot([1,0],[iccline,0],color='black',alpha=0.3)
+            plt.plot([iccline,0],[1,0],color='black',alpha=0.3) 
+
+    if outpath == True:
+        plt.savefig('../figures/shortpaper/fieldmaps/%s_%s_perc%s_fieldmap_nogsr_front_contour_070121_time_1200-600.png' % (taskcombo[0],taskcombo[1],percnum),dpi=300)
+    plt.show()   
+    return xx1,yy1,normalized
+

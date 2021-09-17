@@ -33,6 +33,26 @@ def vector_cmap():
          c('darkgreen'),.875, c('blue'),c('mediumblue'),c('darkblue'), c('deepskyblue')])   
     return rvb
 
+def vector_cmap_p():
+    c = mcolors.ColorConverter().to_rgb
+    rvb = make_colormap(
+        [ c('lightskyblue'), c('white'),.125, c('white') ,c('pink'),
+         .25,c('pink'),c('fuchsia'),.31,c('fuchsia'),c('deeppink'),c('darkred'),.374,c('red'),
+         c('darkorange'),c('orange'),.5,c('orange'), c('navajowhite'), c('white'),
+         .625,c('white'), c('lightgreen'),.75,c('lightgreen') ,c('springgreen'), c('green'),
+         c('darkgreen'),.875, c('blue'),c('mediumblue'),c('darkblue'), c('deepskyblue')])   
+    return rvb
+
+def vector_cmap_n():
+    c = mcolors.ColorConverter().to_rgb
+    rvb = make_colormap(
+        [ c('lightskyblue'), c('white'),.125, c('white') ,c('pink'),
+         .25,c('pink'),c('fuchsia'),.31,c('fuchsia'),c('deeppink'),c('darkred'),.374,c('red'),
+         c('darkorange'),c('orange'),.5,c('orange'), c('navajowhite'), c('white'),
+         .625,c('white'), c('lightgreen'),.75,c('lightgreen') ,c('springgreen'), c('green'),
+         c('darkgreen'),.875, c('blue'),c('mediumblue'),c('darkblue'), c('deepskyblue')])   
+    return rvb
+
 # Create colormap of Yeo 7 network colors
 def get_yeo_colors():
     yeo_colors = np.array([
@@ -156,7 +176,7 @@ def plot_surface_comparisons(taskcombos,data,parcellation, surfaces, numparcels,
     import cifti
     import matplotlib.pyplot as plt
     sys.path.append('../code')
-    from gradient_flow_vectors import calc_icc_vectors_mean, ang2deg
+    from gradient_flow_vectors import calc_icc_vectors_mean, convertAngle,calc_icc_vectors
     lsurf = surfaces[0]
     rsurf = surfaces[1]
     for taskcombo in taskcombos:
@@ -167,17 +187,20 @@ def plot_surface_comparisons(taskcombos,data,parcellation, surfaces, numparcels,
             mask1 = data[task1]['totmask']
             mask2 = data[task2]['totmask']
             bothMask = np.intersect1d(mask1,mask2)
-            icc0 = array2mat(data[task1]['icc'],447)[0]
-            icc1 = array2mat(data[task2]['icc'],447)[0]
-            x0 = array2mat(data[task1]['raww'],447)[0]
-            y0 = array2mat(data[task1]['rawb'],447)[0]
-            x1 = array2mat(data[task2]['raww'],447)[0]
-            y1 = array2mat(data[task2]['rawb'],447)[0]
-            df = calc_icc_vectors_mean(x0,y0,x1,y1,icc0,icc1,task1,task2)
+            icc0 = np.nanmean(array2mat(data[task1]['icc'],447),0)[0]
+            icc1 = np.nanmean(array2mat(data[task2]['icc'],447),0)[0]
+            x0 = np.nanmean(array2mat(data[task1]['raww'],447),0)[0]
+            y0 = np.nanmean(array2mat(data[task1]['rawb'],447),0)[0]
+            x1 = np.nanmean(array2mat(data[task2]['raww'],447),0)[0]
+            y1 = np.nanmean(array2mat(data[task2]['rawb'],447),0)[0]
+    #             df = calc_icc_vectors_mean(x0,y0,x1,y1,icc0,icc1,task1,task2)
+            df = calc_icc_vectors(x0,y0,x1,y1,icc0,icc1,task1,task2)
+
             plotname =  '%s-%s_%s_vectors' % (task2,task1,posNeg)
 
-            
-            angVerts = parcel2vert(parcellation,convertAngle(df))
+            converted_angles = np.array([convertAngle(df['theta0'][i],df['xdiff'][i]) for i in range(len(df['theta0']))])
+
+            angVerts = parcel2vert(parcellation,converted_angles)
             posNegMask = parcel2vert(parcellation,icc1-icc0)
             meandICC = np.mean(posNegMask,0)
             ###################

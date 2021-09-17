@@ -217,7 +217,44 @@ def gradient_flow_histogram(tasks,data,vector_type,num_parc,
             if outpath:
                 plt.savefig('%s/%s_%s_gradient_flow_histogram.png' % (outpath,cond1,cond0),dpi=300)
             plt.show()
-    return df
+
+def pah(theta,bin_threshold,vector_cmap,title,outpath):
+    import matplotlib as mpl
+    mpl.rcParams.update(mpl.rcParamsDefault)
+    plt.rcParams["axes.edgecolor"] = "0.15"
+    plt.rcParams["axes.linewidth"]  = 1.25
+    # Setting bins:
+    bins = np.arange(0,361,bin_threshold)
+    a = np.histogram(theta,bins)
+
+    # Set frequency:
+    height = a[0]/np.sum(a[0])     # bar height
+    deg_ind = np.radians(a[1][1:]) # index in radians
+    width = .1                     # linewidth
+    rmax = np.max(height)*(1+0.1)  # max height for plot - input for 0.1 (10% more than max height)
+
+    # color list:
+    rvbColors = vector_cmap(np.linspace(0, 1, len(deg_ind)))
+
+    # Plot angular histo:
+    ax = plt.subplot(111, projection='polar')
+    ax.set_rlim(0, rmax)
+    ax.set_rticks(np.round(np.arange(rmax/4., rmax+0.01, rmax/4.),3))
+    ax.set_rlabel_position(-90)
+    ax.bar(x=deg_ind, height=height, width=width, 
+           bottom=0, alpha=1, color = rvbColors, edgecolor = 'black',lw=0.2)
+    ax.bar(x=np.radians([45,135,225,315]), height=10, width=0, 
+           bottom=0, alpha=1, tick_label=['No\nChange','+ Optimal','No\nChange','- Optimal'], 
+           color = 'k')
+    ax.tick_params(axis='both', which='major', pad=20)
+    ax.spines['polar'].set_visible(False)
+    if title:
+        plt.title(title,pad=10)
+    plt.tight_layout()
+    if outpath:
+        plt.savefig('%s/%s_%s_gradient_flow_histogram.png' % (outpath,cond1,cond0),dpi=300)
+    plt.show()
+
             
 # Gradient flow angles plotting change in individual variation between tasks:
 def plot_gradient_flow_vector(df, alpha, vector_type, task1,task2, yeo_colors, allparcels, outname):
