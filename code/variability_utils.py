@@ -6,6 +6,31 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from nilearn import plotting
 
+# Load ICC gradient flow colormap
+def icc_gradient_flow_cmap():
+    from matplotlib.image import imread
+    from matplotlib.colors import LinearSegmentedColormap
+    img = imread('../misc/cbars/ICC_gradient_flow_cbar.png')
+    # img is 30 x 280 but we need just one col
+    colors_from_img = img[:, 0, :]
+    # commonly cmpas have 256 entries, but since img is 280 px => N=280
+    my_cmap = LinearSegmentedColormap.from_list('my_cmap', colors_from_img, N=280)
+    def reverse_colourmap(cmap, name = 'my_cmap_r'):
+        reverse = []
+        k = []   
+        for key in cmap._segmentdata:    
+            k.append(key)
+            channel = cmap._segmentdata[key]
+            data = []
+            for t in channel:                    
+                data.append((1-t[0],t[2],t[1]))            
+            reverse.append(sorted(data))    
+        LinearL = dict(zip(k,reverse))
+        my_cmap_r = mpl.colors.LinearSegmentedColormap(name, LinearL) 
+        return my_cmap_r
+    my_cmap_r = reverse_colourmap(my_cmap)
+    return my_cmap_r
+
 # Circular colormap for vector angles. Warm and cold colors for positive and negative change.
 def make_colormap(seq):
     """Return a LinearSegmentedColormap
@@ -36,21 +61,18 @@ def vector_cmap():
 def vector_cmap_p():
     c = mcolors.ColorConverter().to_rgb
     rvb = make_colormap(
-        [ c('lightskyblue'), c('white'),.125, c('white') ,c('pink'),
-         .25,c('pink'),c('fuchsia'),.31,c('fuchsia'),c('deeppink'),c('darkred'),.374,c('red'),
-         c('darkorange'),c('orange'),.5,c('orange'), c('navajowhite'), c('white'),
-         .625,c('white'), c('lightgreen'),.75,c('lightgreen') ,c('springgreen'), c('green'),
-         c('darkgreen'),.875, c('blue'),c('mediumblue'),c('darkblue'), c('deepskyblue')])   
+        [ c('white'),.125,c('pink'),.25,c('pink'),c('fuchsia'),.31,c('fuchsia'),
+         c('deeppink'),c('darkred'),.374,c('red'),c('darkorange'),c('orange'),
+         .5,c('orange'), c('navajowhite'), c('white'),.625,c('white'),.75,c('white'),.875, c('white')])   
     return rvb
 
 def vector_cmap_n():
     c = mcolors.ColorConverter().to_rgb
     rvb = make_colormap(
-        [ c('lightskyblue'), c('white'),.125, c('white') ,c('pink'),
-         .25,c('pink'),c('fuchsia'),.31,c('fuchsia'),c('deeppink'),c('darkred'),.374,c('red'),
-         c('darkorange'),c('orange'),.5,c('orange'), c('navajowhite'), c('white'),
-         .625,c('white'), c('lightgreen'),.75,c('lightgreen') ,c('springgreen'), c('green'),
-         c('darkgreen'),.875, c('blue'),c('mediumblue'),c('darkblue'), c('deepskyblue')])   
+        [ c('lightskyblue'),.125, c('white'),.25,c('white'),.31,c('white'),.374, 
+         c('white'),.5,c('white'),.625,c('white'), c('lightgreen'),.75,c('lightgreen'), 
+         c('springgreen'), c('green'), c('darkgreen'),.875, c('blue'),c('mediumblue'),
+         c('darkblue'), c('deepskyblue')])   
     return rvb
 
 # Create colormap of Yeo 7 network colors
@@ -107,7 +129,7 @@ def array2mat_tril(data,nodes):
 def icc_cmap():
     from matplotlib.image import imread
     from matplotlib.colors import LinearSegmentedColormap
-    img = imread('../misc/cbars/ICC_CBAR.png')
+    img = imread('../misc/cbars/ICC_cbar.png')
     # img is 30 x 280 but we need just one col
     colors_from_img = img[:, 0, :]
     # commonly cmpas have 256 entries, but since img is 280 px => N=280
