@@ -221,7 +221,7 @@ def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outp
             xx1, yy1, z1 = _scipy_bivariate_kde(cond1w, cond1b, bw, gridsize, cut, clip)
             
             # Scaling and normalization so that field maps are comparable:
-            scaler = float(1000)
+            scaler = float(1000) # Take this out and just make sure line 225 is float
             z1scale = scaler*z1/np.sum(z1)
             normalized = (z1scale-np.min(z1scale))/(np.max(z1scale)-np.min(z1scale))
             
@@ -302,13 +302,13 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,
     xx1, yy1, z1 = _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip)
 
     # Scaling and normalization so that field maps are comparable:
-    scaler = float(1000)
+    scaler = float(1000) # Take this out and just make sure line 225 is float
     z1scale = scaler*z1/np.sum(z1)
     normalized = (z1scale-np.min(z1scale))/(np.max(z1scale)-np.min(z1scale))
     
-    # Find max x,y density:
-    maxXY = np.where(normalized == np.max(normalized))
-    print(maxXY)
+#     # Find max x,y density:
+#     maxXY = np.where(normalized == np.max(normalized))
+#     print(maxXY)
     # Reset clip for actual kdeplot:
     clip=None
 

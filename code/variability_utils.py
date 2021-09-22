@@ -6,6 +6,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from nilearn import plotting
 
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=256):
+    new_cmap = mcolors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
+
 # Load ICC gradient flow colormap
 def icc_gradient_flow_cmap():
     from matplotlib.image import imread
@@ -48,50 +54,83 @@ def make_colormap(seq):
             cdict['blue'].append([item, b1, b2])
     return mcolors.LinearSegmentedColormap('CustomMap', cdict)
 
-def vector_cmap():
-    c = mcolors.ColorConverter().to_rgb
-    rvb = make_colormap(
-        [ c('lightskyblue'), c('white'),.125, c('white') ,c('pink'),
-         .25,c('pink'),c('fuchsia'),.31,c('fuchsia'),c('deeppink'),c('darkred'),.374,c('red'),
-         c('darkorange'),c('orange'),.5,c('orange'), c('navajowhite'), c('white'),
-         .625,c('white'), c('lightgreen'),.75,c('lightgreen') ,c('springgreen'), c('green'),
-         c('darkgreen'),.875, c('blue'),c('mediumblue'),c('darkblue'), c('deepskyblue')])   
-    return rvb
+def warm_cold_gradient_flow_cmap():
+    import matplotlib
+    import matplotlib.pyplot as plt
+    import numpy as np
 
-def vector_cmap_p():
-    c = mcolors.ColorConverter().to_rgb
-    rvb = make_colormap(
-        [ c('white'),.125,c('pink'),.25,c('pink'),c('fuchsia'),.31,c('fuchsia'),
-         c('deeppink'),c('darkred'),.374,c('red'),c('darkorange'),c('orange'),
-         .5,c('orange'), c('navajowhite'), c('white'),.625,c('white'),.75,c('white'),.875, c('white')])   
-    return rvb
+    ######################################
+    # Positive, warm gradient flow cmap: #
+    ######################################
+    cmap = icc_gradient_flow_cmap()
+    # Cmap sections for degrees used to section:
+    cmapN = cmap.N
+    ind45 = int(cmapN*(45/360))
+    ind135 = int(cmapN*(135/360))
+    ind180 = int(cmapN*(180/360))
+    ind225 = int(cmapN*(225/360))
 
-def vector_cmap_n():
-    c = mcolors.ColorConverter().to_rgb
-    rvb = make_colormap(
-        [ c('lightskyblue'),.125, c('white'),.25,c('white'),.31,c('white'),.374, 
-         c('white'),.5,c('white'),.625,c('white'), c('lightgreen'),.75,c('lightgreen'), 
-         c('springgreen'), c('green'), c('darkgreen'),.875, c('blue'),c('mediumblue'),
-         c('darkblue'), c('deepskyblue')])   
-    return rvb
+    # Cut out cold colors (0-45 and 225-360 degrees):
+    warm_cmap = truncate_colormap(cmap, 0,1,cmapN)
+    warm_cmap = warm_cmap(np.arange(ind45,ind225))
+    warm_cmap_colors = warm_cmap
+
+    # Set up white colors:
+    white_colors_bottom = plt.cm.Greys_r(np.ones(ind45))
+    white_colors_top = plt.cm.Greys_r(np.ones(cmapN - ind225))
+
+    # Combine them and build a new colormap
+    warm_cmap_whites = np.vstack((white_colors_bottom,warm_cmap_colors,white_colors_top))
+    # warm_cmap_whites = np.vstack((white_colors_bottom,warm_cmap_colors))
+    warm_cmap_whites = mcolors.LinearSegmentedColormap.from_list('my_colormap', warm_cmap_whites)
+
+    # Get both sides of cold, negative colors (0-45 and 225-360 degrees):
+    # 0-45 degrees:
+    cmap = icc_gradient_flow_cmap()
+    # cold_cmap_045 = truncate_colormap(cmap, 0,0.125)
+    cold_cmap_045 = truncate_colormap(cmap, 0,1)
+    cold_cmap_045 = cold_cmap_045(np.arange(0,ind45))
+    cold_cmap_045_colors = cold_cmap_045
+    # 225-360 degrees
+    # cold_cmap_225_360 = truncate_colormap(cmap, 0.625,1)
+    cold_cmap_225_360 = truncate_colormap(cmap, 0,1)
+    cold_cmap_225_360 = cold_cmap_225_360(np.arange(ind225,cmapN))
+    cold_cmap_225_360_colors = cold_cmap_225_360
+    white_colors_middle = plt.cm.Greys_r(np.ones(ind180))
+
+    # combine them and build a new colormap
+    cold_cmap_whites = np.vstack((cold_cmap_045,white_colors_middle,cold_cmap_225_360))
+    cold_cmap_whites = mcolors.LinearSegmentedColormap.from_list('my_colormap', cold_cmap_whites)
+    return warm_cmap_whites,cold_cmap_whites
+
+# def vector_cmap():
+#     c = mcolors.ColorConverter().to_rgb
+#     rvb = make_colormap(
+#         [ c('lightskyblue'), c('white'),.125, c('white') ,c('pink'),
+#          .25,c('pink'),c('fuchsia'),.31,c('fuchsia'),c('deeppink'),c('darkred'),.374,c('red'),
+#          c('darkorange'),c('orange'),.5,c('orange'), c('navajowhite'), c('white'),
+#          .625,c('white'), c('lightgreen'),.75,c('lightgreen') ,c('springgreen'), c('green'),
+#          c('darkgreen'),.875, c('blue'),c('mediumblue'),c('darkblue'), c('deepskyblue')])   
+#     return rvb
 
 # Create colormap of Yeo 7 network colors
-def get_yeo_colors():
-    yeo_colors = np.array([
-        (120,18,134),
-        (70,130,180),
-        (0,118,14),
-        (196,58,250),
-        (220,248,164),
-        (230,148,34),
-        (205,62,78),
-        (0,0,0)
-    ], dtype=float)
-    yeo_colors /=255.
-    return yeo_colors
+yeo_colors = np.array([
+    (120,18,134),
+    (70,130,180),
+    (0,118,14),
+    (196,58,250),
+    (220,248,164),
+    (230,148,34),
+    (205,62,78),
+    (0,0,0)
+], dtype=float)
+yeo_colors /=255.
 
 # Load Yeo 7 network assignments to Glasser 360 parcellation
 def get_yeo_parcels():
+    # Matching done in-house
+    # post online.
+    # Change to path input so user can input their own parcellation-to-network files
     lhparcels = pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchlh.csv').values[1:,2]
     rhparcels = pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchrh.csv').values[1:,2]
     allparcels = np.r_[lhparcels,rhparcels]
