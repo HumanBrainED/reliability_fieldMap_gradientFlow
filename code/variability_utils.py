@@ -4,7 +4,7 @@ import matplotlib.cm as mcm
 import matplotlib.colors as mcolors
 import pandas as pd
 import matplotlib.pyplot as plt
-from nilearn import plotting
+from nilearn import plotting # Don't need if brainspace works
 
 # Colormaps
 gradientFlowCmaps = np.load('../misc/cmaps/gradientFlowCmap.npy',allow_pickle=True).item()
@@ -16,26 +16,6 @@ yeo_colors = np.load('../misc/cmaps/yeoColors.npy',allow_pickle=True)
 # Change to path input so user can input their own parcellation-to-network files
 allparcels = np.r_[pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchlh.csv').values[1:,2],
                    pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchrh.csv').values[1:,2]]
-
-
-def plot_surface(vdata,lsurf,rsurf,numVertices,data_range,cmap,alpha,darkness,cbar,symmetric_cmap,outpath,plotname):
-    vmin,vmax = data_range
-    for side in ['left','right']:
-        if side == 'left':
-            surf_array = vdata[0,:numVertices]
-            surf = lsurf
-        else:
-            surf_array = vdata[0,numVertices:]
-            surf = rsurf
-        for view in ['lateral','medial']:
-            plt.figure(figsize=(10,15))
-            plt.rcParams['axes.facecolor'] = 'white'
-            _ = plotting.plot_surf(surf, surf_array, 
-                                   hemi=side, view=view,
-                                   bg_on_data = True,
-                                   cmap = cmap, colorbar=cbar, vmin=vmin, vmax=vmax, 
-                                   avg_method='median',alpha=alpha, darkness=darkness,
-                                   symmetric_cmap=symmetric_cmap)
 
 def array2mat(data,nodes):
     mat = np.zeros([nodes,nodes])
@@ -60,3 +40,23 @@ def parcel2vert(glasserlabel,theta_img):
             p_idx = np.where(glasserlabel[0,:]==plabel+1)[0]
             data[parcel,p_idx] = theta_img[parcel,plabel]
     return data
+
+def plot_surface(vdata,lsurf,rsurf,numVertices,data_range,cmap,alpha,darkness,cbar,symmetric_cmap,outpath,plotname):
+    vmin,vmax = data_range
+    for side in ['left','right']:
+        if side == 'left':
+            surf_array = vdata[0,:numVertices]
+            surf = lsurf
+        else:
+            surf_array = vdata[0,numVertices:]
+            surf = rsurf
+        for view in ['lateral','medial']:
+            plt.figure(figsize=(10,15))
+            plt.rcParams['axes.facecolor'] = 'white'
+            _ = plotting.plot_surf(surf, surf_array, 
+                                   hemi=side, view=view,
+                                   bg_on_data = True,
+                                   cmap = cmap, colorbar=cbar, vmin=vmin, vmax=vmax, 
+                                   avg_method='median',alpha=alpha, darkness=darkness,
+                                   symmetric_cmap=symmetric_cmap)
+
