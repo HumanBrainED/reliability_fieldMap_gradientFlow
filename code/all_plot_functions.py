@@ -374,46 +374,6 @@ def make_colormap(seq):
             cdict['blue'].append([item, b1, b2])
     return mcolors.LinearSegmentedColormap('CustomMap', cdict)
 
-# Make circular colormap:
-# def vector_cmap():
-#     import matplotlib
-#     cmap = mcm.get_cmap('Paired')
-#     newcols = []
-#     for i in range(cmap.N):
-#         if i < 8:
-#             rgb = cmap(i)[:3] # will return rgba, we take only first 3 so we get rgb
-#             cmap_hex = matplotlib.colors.rgb2hex(rgb)
-#             newcols.append(cmap_hex)
-#     c = mcolors.ColorConverter().to_rgb
-#     rvb = make_colormap([
-#     c(newcols[0]), c('white'), 0.125, 
-#     c('white'),
-#     c('pink'), 0.25,
-#     c('pink'), c(newcols[5]), c('red'),0.374,
-#     c('red'),
-#     c(newcols[5]),
-#     c(newcols[4]),
-#     c(newcols[6]),
-#     c(newcols[7]),
-#     c('orange'), 0.5, c('orange'),
-#     c(newcols[7]),
-#     c(newcols[6]),
-#     c('white'), 0.625, c('white'),
-#     c(newcols[2]),
-#     c(newcols[3]),0.75,c(newcols[3]),c('green'),
-#     c(newcols[1]),0.875,c(newcols[1]),
-#     c(newcols[0]),c(newcols[0])])
-#     return rvb
-def vector_cmap():
-    c = mcolors.ColorConverter().to_rgb
-    rvb = make_colormap(
-        [ c('lightskyblue'), c('white'),.125, c('white') ,c('pink'),
-         .25,c('pink'),c('fuchsia'),.31,c('fuchsia'),c('deeppink'),c('darkred'),.374,c('red'),
-         c('darkorange'),c('orange'),.5,c('orange'), c('navajowhite'), c('white'),
-         .625,c('white'), c('lightgreen'),.75,c('lightgreen') ,c('springgreen'), c('green'),
-         c('darkgreen'),.875, c('blue'),c('mediumblue'),c('darkblue'), c('deepskyblue')])   
-    return rvb
-
 def get_yeo_colors():
     yeo_colors = np.array([
         (120,18,134),
@@ -605,3 +565,189 @@ def getCircularMean(angles):
     cosineMean = np.divide(np.nansum(np.cos(np.radians(angles))), n)
     vectorMean = np.arctan2(sineMean, cosineMean)
     return np.degrees(vectorMean)
+
+
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=256):
+    new_cmap = mcolors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
+
+# Load ICC gradient flow colormap
+def icc_gradient_flow_cmap():
+    from matplotlib.image import imread
+    from matplotlib.colors import LinearSegmentedColormap
+    img = imread('../misc/cbars/ICC_gradient_flow_cbar.png')
+    # img is 30 x 280 but we need just one col
+    colors_from_img = img[:, 0, :]
+    # commonly cmpas have 256 entries, but since img is 280 px => N=280
+    my_cmap = LinearSegmentedColormap.from_list('my_cmap', colors_from_img, N=280)
+    def reverse_colourmap(cmap, name = 'my_cmap_r'):
+        reverse = []
+        k = []   
+        for key in cmap._segmentdata:    
+            k.append(key)
+            channel = cmap._segmentdata[key]
+            data = []
+            for t in channel:                    
+                data.append((1-t[0],t[2],t[1]))            
+            reverse.append(sorted(data))    
+        LinearL = dict(zip(k,reverse))
+        my_cmap_r = mpl.colors.LinearSegmentedColormap(name, LinearL) 
+        return my_cmap_r
+    my_cmap_r = reverse_colourmap(my_cmap)
+    return my_cmap_r
+
+# Circular colormap for vector angles. Warm and cold colors for positive and negative change.
+def make_colormap(seq):
+    """Return a LinearSegmentedColormap
+    seq: a sequence of floats and RGB-tuples. The floats should be increasing
+    and in the interval (0,1).
+    """
+    seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
+    cdict = {'red': [], 'green': [], 'blue': []}
+    for i, item in enumerate(seq):
+        if isinstance(item, float):
+            r1, g1, b1 = seq[i - 1]
+            r2, g2, b2 = seq[i + 1]
+            cdict['red'].append([item, r1, r2])
+            cdict['green'].append([item, g1, g2])
+            cdict['blue'].append([item, b1, b2])
+    return mcolors.LinearSegmentedColormap('CustomMap', cdict)
+
+############################################
+# Create gradient flow warm/cold colormaps #
+############################################
+
+import matplotlib
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+gflowcmap = pd.read_csv('../misc/cmaps/colormap_reliability_gradient_flow.csv').values
+# print(gflowcmap)
+my_cmap = matplotlib.colors.ListedColormap(gflowcmap, name='rvb_complate')
+gradientFlowCmaps['complete'] = my_cmap
+
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=360):
+    new_cmap = mcolors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
+
+######################################
+# Positive, warm gradient flow cmap: #
+######################################
+cmap = my_cmap
+# Cmap sections for degrees used to section:
+cmapN = cmap.N
+ind45 = int(cmapN*(45/360))
+ind135 = int(cmapN*(135/360))
+ind180 = int(cmapN*(180/360))
+ind225 = int(cmapN*(225/360))
+
+# Cut out cold colors (0-45 and 225-360 degrees):
+warm_cmap = cmap.colors[np.arange(ind45,ind225)]
+oneArray = np.ones([warm_cmap.shape[0],1])
+warm_cmap_colors = np.hstack([warm_cmap,oneArray])
+# Set up white colors:
+white_colors_bottom = plt.cm.Greys_r(np.ones(ind45))
+white_colors_top = plt.cm.Greys_r(np.ones(cmapN - ind225))
+
+# Combine them and build a new colormap
+warm_cmap_whites = np.vstack((white_colors_bottom,warm_cmap_colors,white_colors_top))
+# warm_cmap_whites = np.vstack((white_colors_bottom,warm_cmap_colors))
+warm_cmap_whites = mcolors.LinearSegmentedColormap.from_list('my_colormap', warm_cmap_whites)
+
+# Get both sides of cold, negative colors (0-45 and 225-360 degrees):
+# 0-45 degrees:
+cmap = my_cmap
+cold_cmap_045 = cmap.colors[np.arange(0,ind45)]
+oneArray = np.ones([cold_cmap_045.shape[0],1])
+cold_cmap_045_colors = np.hstack([cold_cmap_045,oneArray])
+# 225-360 degrees
+cold_cmap_225_360 = cmap.colors[np.arange(ind225,cmapN)]
+oneArray = np.ones([cold_cmap_225_360.shape[0],1])
+cold_cmap_225_360_colors = np.hstack([cold_cmap_225_360,oneArray])
+white_colors_middle = plt.cm.Greys_r(np.ones(ind180))
+
+# combine them and build a new colormap
+cold_cmap_whites = np.vstack((cold_cmap_045_colors,white_colors_middle,cold_cmap_225_360_colors))
+cold_cmap_whites = mcolors.LinearSegmentedColormap.from_list('my_colormap', cold_cmap_whites)
+
+# Gradient flow angles plotting change in individual variation between tasks:
+def plot_gradient_flow_vector(df, alpha, vector_type, task1,task2, yeo_colors, allparcels, outname):
+    import matplotlib.pyplot as plt
+    cond0 = df['task1name']
+    cond1 = df['task2name']
+    icc0 = df['icc0']
+    icc1 = df['icc1']
+    numnodes = df['theta0'].shape[0]
+    fig, ax = plt.subplots(figsize=(10,10),dpi=300)  
+    ax.set_facecolor('xkcd:white')
+    for i in range(numnodes):
+        if vector_type == 'raw':
+            # Non-normalized vectors so we remove the "optimal change" and plot "raw change":
+            xstart = df['x0'][i]; xend = df['x1'][i]
+            ystart = df['y0'][i]; yend = df['y1'][i]
+            ax.set_xlim([0,0.02])
+            ax.set_ylim([0,0.02])
+            xticks = np.arange(0,0.0201,0.0025)
+            yticks = np.arange(0,0.0201,0.0025)
+        elif vector_type == 'norm':
+            xstart = df['x0'][i]; xend = df['x_star'][i]+df['xdiff'][i]
+            ystart = df['y0'][i]; yend = df['y_star'][i]+df['ydiff'][i]
+            ax.set_xlim([0,0.02])
+            ax.set_ylim([0,0.02])
+            xticks = np.arange(0,0.0201,0.0025)
+            yticks = np.arange(0,0.0201,0.0025)
+        elif vector_type == 'raw_0':
+            xstart = 0; xend = df['xdiff'][i]
+            ystart = 0; yend = df['ydiff'][i]
+            ax.set_xlim([-0.01,0.01])
+            ax.set_ylim([-0.01,0.01])
+            xticks = np.round(np.arange(-0.01,0.01,0.005),3)
+            yticks = np.round(np.arange(-0.01,0.01,0.005),3)
+            
+        xdiff = df['xdiff'][i]
+        ydiff = df['ydiff'][i]
+        scale = df['dICC'][i]
+        degrees = df['theta0'][i]
+        if np.isnan(degrees) == False:
+            if icc1[i] - icc0[i] <= 0:
+                color_head = yeo_colors[allparcels[i]-1]
+                color_tail = yeo_colors[allparcels[i]-1]
+            else:
+                color_tail = yeo_colors[allparcels[i]-1]
+                color_head = yeo_colors[allparcels[i]-1]
+            prop_head = dict(arrowstyle = "-|>,head_width=0.3,head_length=.4",
+                      shrinkA=5,shrinkB=5,color = color_head, 
+                           alpha=alpha,linewidth=1)
+            prop_line = dict(arrowstyle="wedge,tail_width=1, shrink_factor=5", 
+                           shrinkA=5, shrinkB=5, color = color_tail,
+                           alpha=alpha, width = 1)
+            prop_head = dict(arrowstyle = "-|>,head_width=0.4,head_length=.8",
+                      shrinkA=5,shrinkB=5,color = color_head, 
+                           alpha=alpha,linewidth=3)
+            prop_line = dict(arrowstyle="wedge,tail_width=3, shrink_factor=5", 
+                           shrinkA=5, shrinkB=5, color = color_tail,
+                           alpha=alpha, width = 2)
+            arr1 = ax.annotate("", xy=(xend, yend), xycoords = 'data', 
+                  xytext=(xstart, ystart), textcoords='data',
+                  arrowprops=prop_head, annotation_clip=False)
+            arr1.arrow_patch.set_clip_box(ax.bbox)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticks, fontsize=15)
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(yticks, fontsize=15)
+    plt.plot([-1,1],[-1,1],color = 'gray',linestyle = '--')
+    # plt.title('%s-%s' % (cond1,cond0))
+    # if outname:
+    plt.savefig(outname)
+    plt.title('%s-%s' % (cond1,cond0))
+    if outname == True:
+        plt.savefig(outname)
+    plt.show()
+    
+    
+

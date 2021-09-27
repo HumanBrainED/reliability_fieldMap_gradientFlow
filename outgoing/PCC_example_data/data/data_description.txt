@@ -1,0 +1,18 @@
+PCC Example data descriptions (GSR - no GSR)
+
+Output from calc_icc_vectors: PCC_gradientFlowVectors.mat
+- x0, x1: within variation from no GSR and GSR (1x360)
+- y0, y1: between variation from no GSR and GSR (1x360)
+- x0_star, x1_star, y0_star, y1_star: normalized within and between variations (1x360)
+- icc0: no GSR ICC (1x360) 
+- icc1: GSR ICC (1x360) 
+- xdiff, ydiff: normalized vector endpoints (1x360)
+- dICC: ICC difference (icc1 - icc0) (1x360)
+- theta0: normalized theta vectors in angles (1x360)
+
+ICC model output data: PCC_ICC_output_gsr.mat and PCC_ICC_output_nogsr.mat
+For each condition REST_gsr and REST_nogsr:
+- raww: within variation (1x360)
+- rawb: between variation (1x360)
+- icc: icc output (1x360)
+- vartotal: total variation (1x360)
