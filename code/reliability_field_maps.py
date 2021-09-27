@@ -1,9 +1,7 @@
 import numpy as np
 import matplotlib as mpl
-import matplotlib.cm as mcm
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-import pandas as pd
 import seaborn as sns
 from scipy import stats
 from seaborn.utils import iqr, _kde_support, remove_na
