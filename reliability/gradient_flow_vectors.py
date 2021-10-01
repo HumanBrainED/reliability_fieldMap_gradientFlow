@@ -1,10 +1,10 @@
+import math
 import numpy as np 
-import matplotlib.pyplot as plt
-from variability_utils import *
+import matplotlib as mpl
 
 # Calculate normalized vectors for ICC difference across tasks.
-def calc_icc_vectors(x0,y0,x1,y1,icc0,icc1,task1name,task2name,mean=False):
-    import math
+def calc_icc_vectors(x0,y0,icc0,x1,y1,icc1,task1name,task2name):
+    
     if icc0 is None and icc1 is None:
         icc0 = b0/(b0+w0)
         icc1 = b1/(b1+w1)
@@ -24,7 +24,8 @@ def calc_icc_vectors(x0,y0,x1,y1,icc0,icc1,task1name,task2name,mean=False):
     y1_n = np.sin(rot)*x1 + np.cos(rot)*y1
     xdiff = x1_n-x0_n; ydiff = y1_n-y0_n
     ang = np.degrees(np.arctan(ydiff/xdiff))
-
+    
+    # Convert angles from 0 to 180 and 0 to -180 to 0-360:
     newAngle = ang - len(xdiff)*[180]*np.minimum(0,np.sign(xdiff))
     newAngle[newAngle<0] += 360
     
@@ -47,7 +48,6 @@ def calc_icc_vectors(x0,y0,x1,y1,icc0,icc1,task1name,task2name,mean=False):
     return df
 
 def pah(theta,bin_threshold,vector_cmap,title,outpath):
-    import matplotlib as mpl
     mpl.rcParams.update(mpl.rcParamsDefault)
     mpl.pyplot.rcParams["axes.edgecolor"] = "0.15"
     mpl.pyplot.rcParams["axes.linewidth"]  = 1.25
@@ -69,8 +69,10 @@ def pah(theta,bin_threshold,vector_cmap,title,outpath):
     ax.set_rlim(0, rmax)
     ax.set_rticks(np.round(np.arange(rmax/4., rmax+0.01, rmax/4.),3))
     ax.set_rlabel_position(-90)
+    # Histogram portion:
     ax.bar(x=deg_ind, height=height, width=width, 
            bottom=0, alpha=1, color = rvbColors, edgecolor = 'black',lw=0.2)
+    # Lines to show optimal/suboptimal angle direction:
     ax.bar(x=np.radians([45,135,225,315]), height=10, width=0, 
            bottom=0, alpha=1, tick_label=['No\nChange','+ Optimal','No\nChange','- Optimal'], 
            color = 'k')

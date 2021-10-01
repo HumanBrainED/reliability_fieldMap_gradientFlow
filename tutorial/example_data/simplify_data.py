@@ -21,3 +21,21 @@ for task in ['REST_nogsr','REST_gsr']:
 for i in data[task].keys():
     print(i,data[task][i].shape)
 np.save('../tutorial/example_data/tutorial_data.npy',data)
+
+
+# Load Data:
+data = np.load('../tutorial/example_data/tutorial_data.npy',allow_pickle=True).item()
+tasks = [task for task in data.keys()]
+print('Task conditions in data variable: %s' % tasks)
+print('Dictionary keys within each task condition: %s' % [data_keys for data_keys in data[tasks[0]].keys()])
+newdata = data.copy()
+for task in tasks:
+    for m in ['raww_masked', 'rawb_masked', 'icc_masked', 'vartotal_masked']:
+        del newdata[task][m]
+    newmask = np.zeros(len(newdata[task]['raww']))
+    newmask[newdata[task]['totmask_cortex']] = 1
+    newdata[task]['totmask'] = newmask[:64620]
+    del newdata[task]['totmask_cortex']
+    for mm in ['rawb', 'raww', 'icc', 'vartotal']:
+        newdata[task][mm] = newdata[task][mm][:64620]
+np.save('../tutorial/example_data/tutorial_data.npy',newdata)
