@@ -2,12 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from variability_utils import *
 
-def convertAngle(angle,xdiff):
-    newAngle = angle - 180*(np.min([np.sign(xdiff),0]))
-    if newAngle < 0:
-        newAngle += 360
-    return newAngle
-
 # Calculate normalized vectors for ICC difference across tasks.
 def calc_icc_vectors(x0,y0,x1,y1,icc0,icc1,task1name,task2name,mean=False):
     import math
@@ -33,6 +27,7 @@ def calc_icc_vectors(x0,y0,x1,y1,icc0,icc1,task1name,task2name,mean=False):
 
     newAngle = ang - len(xdiff)*[180]*np.minimum(0,np.sign(xdiff))
     newAngle[newAngle<0] += 360
+    
     df = {'x0': x0,
           'y0': y0,
           'x1': x1,
@@ -54,8 +49,8 @@ def calc_icc_vectors(x0,y0,x1,y1,icc0,icc1,task1name,task2name,mean=False):
 def pah(theta,bin_threshold,vector_cmap,title,outpath):
     import matplotlib as mpl
     mpl.rcParams.update(mpl.rcParamsDefault)
-    plt.rcParams["axes.edgecolor"] = "0.15"
-    plt.rcParams["axes.linewidth"]  = 1.25
+    mpl.pyplot.rcParams["axes.edgecolor"] = "0.15"
+    mpl.pyplot.rcParams["axes.linewidth"]  = 1.25
     # Setting bins:
     bins = np.arange(0,361,bin_threshold)
     hist = np.histogram(theta,bins)
@@ -70,7 +65,7 @@ def pah(theta,bin_threshold,vector_cmap,title,outpath):
     rvbColors = vector_cmap(np.linspace(0, 1, len(deg_ind)))
 
     # Plot angular histo:
-    ax = plt.subplot(111, projection='polar')
+    ax = mpl.pyplot.subplot(111, projection='polar')
     ax.set_rlim(0, rmax)
     ax.set_rticks(np.round(np.arange(rmax/4., rmax+0.01, rmax/4.),3))
     ax.set_rlabel_position(-90)
@@ -82,10 +77,11 @@ def pah(theta,bin_threshold,vector_cmap,title,outpath):
     ax.tick_params(axis='both', which='major', pad=20)
     ax.spines['polar'].set_visible(False)
     if title:
-        plt.title(title,pad=10)
-    plt.tight_layout()
+        mpl.pyplot.title(title,pad=10)
+    mpl.pyplot.tight_layout()
     if outpath:
-        plt.savefig('%s/%s_%s_gradient_flow_histogram.png' % (outpath,cond1,cond0),dpi=300)
-    plt.show()
+        mpl.pyplot.savefig('%s' % (outpath),dpi=300)
+    mpl.pyplot.show()
+
 
             

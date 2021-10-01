@@ -16,3 +16,6 @@ For each condition REST_gsr and REST_nogsr:
 - rawb: between variation (1x360)
 - icc: icc output (1x360)
 - vartotal: total variation (1x360)
+
+ICC model input data: PCC_ICC_input_gsr.csv and PCC_ICC_input_nogsr.csv
+- CSV of all subsets x subID, condition (subset), age, gender, global connectivity (goon), mean FD (meanFD) and 360 Glasser region FC

@@ -1,9 +1,6 @@
+import cifti
 import numpy as np
-import matplotlib as mpl
-import matplotlib.colors as mcolors
 import pandas as pd
-import matplotlib.pyplot as plt
-from nilearn import plotting # Don't need if brainspace works
 
 # Colormaps
 gradientFlowCmaps = np.load('../misc/cmaps/gradientFlowCmap.npy',allow_pickle=True).item()
@@ -15,6 +12,10 @@ yeo_colors = np.load('../misc/cmaps/yeoColors.npy',allow_pickle=True)
 # Change to path input so user can input their own parcellation-to-network files
 allparcels = np.r_[pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchlh.csv').values[1:,2],
                    pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchrh.csv').values[1:,2]]
+
+# Load region to vertex mapping to convert 360 parcels to vertices
+plabel = '../misc/Glasser2016_labels/HCP_MMP_P210_10k.dlabel.nii'
+glasserlabel,(ax1,ax2) = cifti.read(plabel)
 
 def array2mat(data,nodes):
     mat = np.zeros([nodes,nodes])
