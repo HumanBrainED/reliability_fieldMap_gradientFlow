@@ -1,17 +1,20 @@
+import os
 import cifti
 import numpy as np
 import pandas as pd
 
+fpath = os.path.dirname(os.path.abspath(__file__))
+
 # Colormaps
-gradientFlowCmaps = np.load('../misc/cmaps/gradientFlowCmap.npy',allow_pickle=True).item()
-yeo_colors = np.load('../misc/cmaps/yeoColors.npy',allow_pickle=True)
+gradientFlowCmaps = np.load(fpath + '/misc/cmaps/gradientFlowCmap.npy',allow_pickle=True).item()
+yeo_colors = np.load(fpath + '/misc/cmaps/yeoColors.npy',allow_pickle=True)
 
 # Load Yeo 7 network assignments to Glasser 360 parcellation
-allparcels = np.r_[pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchlh.csv').values[1:,2],
-                   pd.read_csv('../misc/Yeo7_to_Glasser360_labels/181Yeo7matchrh.csv').values[1:,2]]
+allparcels = np.r_[pd.read_csv(fpath + '/misc/Yeo7_to_Glasser360_labels/181Yeo7matchlh.csv').values[1:,2],
+                   pd.read_csv(fpath + '/misc/Yeo7_to_Glasser360_labels/181Yeo7matchrh.csv').values[1:,2]]
 
 # Load region to vertex mapping to convert 360 parcels to vertices
-plabel = '../misc/Glasser2016_labels/HCP_MMP_P210_10k.dlabel.nii'
+plabel = fpath + '/misc/Glasser2016_labels/HCP_MMP_P210_10k.dlabel.nii'
 glasserlabel,(ax1,ax2) = cifti.read(plabel)
 
 def array2mat(data,nodes):

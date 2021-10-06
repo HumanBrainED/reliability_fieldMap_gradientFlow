@@ -25,6 +25,7 @@ def calc_icc_vectors(x0,y0,icc0,x1,y1,icc1,task1name,task2name):
     xdiff = x1_n-x0_n; ydiff = y1_n-y0_n
     ang = np.degrees(np.arctan(ydiff/xdiff))
     
+    # Give option:
     # Convert angles from 0 to 180 and 0 to -180 to 0-360:
     newAngle = ang - len(xdiff)*[180]*np.minimum(0,np.sign(xdiff))
     newAngle[newAngle<0] += 360

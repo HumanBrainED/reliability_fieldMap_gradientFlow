@@ -5,7 +5,9 @@ import matplotlib as mpl
 import seaborn as sns
 from seaborn.utils import _kde_support
 from six import string_types
-
+#####################
+# Why is this here
+#####################
 # Calculate KDE for field maps:
 def _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip):
 
@@ -152,8 +154,10 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
             mpl.pyplot.plot([1,0],[1,0],color='black',alpha=0.3,zorder=0)
             for iccline in [0.2,0.4,0.6,0.8]:
                 mpl.pyplot.plot([1,0],[iccline,0],color='black',alpha=0.3)
-                mpl.pyplot.plot([iccline,0],[1,0],color='black',alpha=0.3) 
-
+                mpl.pyplot.plot([iccline,0],[1,0],color='black',alpha=0.3)
+        #######################################
+        ### Output figure handle not saving ###
+        #######################################
         if outpath == True:
             mpl.pyplot.savefig('../figures/shortpaper/fieldmaps/%s_%s_perc%s_fieldmap_nogsr_front_contour_070121_time_1200-600.png' % (taskcombo[0],taskcombo[1],percnum),dpi=300)
         mpl.pyplot.show()   
