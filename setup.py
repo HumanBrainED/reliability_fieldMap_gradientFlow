@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-setup(name='reliability',
+setup(name='variabilityFMGF',
       version='1.0',
       description='Package to utilize variability field map and variability gradient flow frameworks',
       author='Jae Wook Cho',
