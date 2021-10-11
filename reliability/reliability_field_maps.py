@@ -188,13 +188,13 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
         mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
         mpl.pyplot.show()
     
-    return xx1,yy1,normalized
+    return xx1,yy1,normalized,fig
 
 
 # Plot field map for each condition in taskcombos in 1 plot for comparison:
 def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath,
                       cbar_option=True,figSize=(12,10),xlim=(0,0.025),ylim=(0,0.025),
-                     shade=True,thr=0.0001):
+                     shade=True,thr=0.0001,plotstyle=['all']):
     for taskcombo in taskcombos:
         mpl.pyplot.figure(figsize=(figSize[0],figSize[1]))
         sns.set_style('white')
@@ -266,7 +266,17 @@ def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outp
 #                 if (len(taskcombo) >= 1) & (num == len(taskcombo)-1):
                 if num == 0:
                     cbar.set_label('Density',labelpad=20)
-                    
+            if 'scatter' in plotstyle or plotstyle == 'all':
+                fig, ax = mpl.pyplot.subplots(figsize=(figSize[1],figSize[1]))
+                ax.set_facecolor('white')
+                mpl.pyplot.scatter(x,y, color=taskcolor,marker='o',s=10,linewidth=1,edgecolor='k',alpha=0.3)
+                mpl.pyplot.xlim([0,xyVals[1]])
+                mpl.pyplot.ylim([0,xyVals[1]])
+                mpl.pyplot.xticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
+                mpl.pyplot.yticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
+                mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+                mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+                mpl.pyplot.show()      
         if lines == True:
             mpl.pyplot.plot([1,0],[1,0],color='black',alpha=0.3,zorder=0)
             for iccline in [0.2,0.4,0.6,0.8]:
@@ -274,5 +284,6 @@ def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outp
                 mpl.pyplot.plot([iccline,0],[1,0],color='black',alpha=0.3,zorder=len(taskcombos)+1) 
                 
         if outpath == True:
-            mpl.pyplot.savefig('../figures/shortpaper/fieldmaps/%s_%s_perc%s_fieldmap_nogsr_front_contour_070121_time_1200-600.png' % (taskcombo[0],taskcombo[1],percnum),dpi=300)
+            print('save as figure')
+#             mpl.pyplot.savefig('../figures/shortpaper/fieldmaps/%s_%s_perc%s_fieldmap_nogsr_front_contour_070121_time_1200-600.png' % (taskcombo[0],taskcombo[1],percnum),dpi=300)
         mpl.pyplot.show()   
