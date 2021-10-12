@@ -6,4 +6,4 @@
 
 3. Data organization
 
-4. Tutorial
+4. Usage

@@ -8,5 +8,11 @@ setup(name='variabilityFMGF',
       author='Jae Wook Cho',
       author_email='jae7cho@gmail.com',
       url='https://github.com/jae7cho/reliability_fieldMap_gradientFlow',
-      packages=['reliability'],
+      packages=setuptools.find_packages(),
+      include_package_data=True,
+      package_data={'': [
+                        'tutorial/example_data/tutorial_data.npy',
+                        'misc/cmaps/gradientFlowCmaps.npy'
+                        ]
+                    }
      )
