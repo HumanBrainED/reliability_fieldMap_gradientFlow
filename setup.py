@@ -13,7 +13,7 @@ setup(name='variabilityFMGF',
       include_package_data=True,
       package_data={'': [
                         'tutorial/example_data/tutorial_data.npy',
-                        'misc/cmaps/gradientFlowCmaps.npy'
+                        'misc/cmaps/gradientFlowCmap.npy'
                         ]
                     }
      )
