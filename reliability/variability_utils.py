@@ -7,7 +7,7 @@ fpath = os.path.dirname(os.path.abspath(__file__))
 
 # Colormaps
 gradientFlowCmaps = np.load(fpath + '/misc/cmaps/gradientFlowCmap.npy',allow_pickle=True).item()
-yeo_colors = np.load(fpath + '/misc/cmaps/yeoColors.npy',allow_pickle=True)
+# yeo_colors = np.load(fpath + '/misc/cmaps/yeoColors.npy',allow_pickle=True)
 
 # Load Yeo 7 network assignments to Glasser 360 parcellation
 allparcels = np.r_[pd.read_csv(fpath + '/misc/Yeo7_to_Glasser360_labels/181Yeo7matchlh.csv').values[1:,2],
