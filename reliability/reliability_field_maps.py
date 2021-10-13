@@ -76,7 +76,11 @@ def _bivariate_kdeplot(xx1, yy1, z1scale, filled, fill_lowest,
 
 def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsize=300,
                      overlay=False,cbar_option=True,figSize=(12,10),xyLim=95,shade=True,addContourLines=True,
-                  plotstyle='all',bins=500):
+                  plotstyle=['kde'],bins=500):
+    
+    # Output as figure variable
+    figs = {}
+    
     # Set X,Y lims:
     if int(xyLim):
         xperc = np.percentile(x,xyLim)
@@ -107,7 +111,7 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
     sns.set(font_scale=3)
     
     if 'kde' in plotstyle or plotstyle == 'all':
-        mpl.pyplot.figure(figsize=(figSize[0],figSize[1]))
+        fig = mpl.pyplot.figure(figsize=(figSize[0],figSize[1]))
         sns.set_style('white')
         ax=mpl.pyplot.gca()
         ax.axes.set_xlim([xyVals[0],xyVals[1]])
@@ -155,12 +159,9 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
             for iccline in [0.2,0.4,0.6,0.8]:
                 mpl.pyplot.plot([1,0],[iccline,0],color='black',alpha=0.3)
                 mpl.pyplot.plot([iccline,0],[1,0],color='black',alpha=0.3)
-        #######################################
-        ### Output figure handle not saving ###
-        #######################################
-        if outpath == True:
-            mpl.pyplot.savefig('../figures/shortpaper/fieldmaps/%s_%s_perc%s_fieldmap_nogsr_front_contour_070121_time_1200-600.png' % (taskcombo[0],taskcombo[1],percnum),dpi=300)
-        mpl.pyplot.show()   
+        figs['kde'] = fig
+        mpl.pyplot.show()
+        
     
     if 'nokde' in plotstyle or plotstyle == 'all':
         fig, ax = mpl.pyplot.subplots(figsize=(figSize[0],figSize[1]))
@@ -174,6 +175,7 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
         mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
         cbar = mpl.pyplot.colorbar()
         cbar.set_label('Density',labelpad=20)
+        figs['nokde'] = fig
         mpl.pyplot.show()
         
     if 'scatter' in plotstyle or plotstyle == 'all':
@@ -186,104 +188,145 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
         mpl.pyplot.yticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
         mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
         mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+        figs['scatter'] = fig
         mpl.pyplot.show()
     
-    return xx1,yy1,normalized,fig
+    return xx1,yy1,normalized,figs
+
 
 
 # Plot field map for each condition in taskcombos in 1 plot for comparison:
 def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath,
-                      cbar_option=True,figSize=(12,10),xlim=(0,0.025),ylim=(0,0.025),
-                     shade=True,thr=0.0001,plotstyle=['all']):
-    for taskcombo in taskcombos:
-        mpl.pyplot.figure(figsize=(figSize[0],figSize[1]))
-        sns.set_style('white')
-        ax=mpl.pyplot.gca()
-        mpl.rcParams['font.weight'] = 'bold'
-        mpl.rcParams['font.size'] = 1
-        sns.set(font_scale=3)
-        ax.axes.set_xlim([xlim[0],xlim[1]])
-        ax.axes.set_ylim([ylim[0],ylim[1]])
-        mpl.pyplot.xticks([],fontweight='bold',fontsize=20)
-        mpl.pyplot.yticks([],fontweight='bold',fontsize=20)
-        mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
-        mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
-        ###
+                      cbar_option=True,figSize=(12,10),xyLim=95,
+                     shade=True,thr=0.0001,plotstyle=['kde','scatter'],scatter_alpha=0.2):
+    figs = {}
+    for fignum,taskcombo in enumerate(taskcombos):
+        figs[fignum] = {}
+        # Set X,Y lims:
+        if int(xyLim):
+            xyVals_array = []
+            for num,cond1 in enumerate(taskcombo):
+                t1color = taskcolors[cond1]
+                exec('colors1 = mpl.pyplot.cm.%s(np.linspace(0,1,128))' % taskcmaps[cond1])
+                cond1w = data[cond1]['raww'][data[cond1]['totmask']*data[cond1]['totmask']]
+                cond1b = data[cond1]['rawb'][data[cond1]['totmask']*data[cond1]['totmask']]
+                xperc = np.percentile(cond1w,xyLim)
+                yperc = np.percentile(cond1b,xyLim)
+                xyVals_array.append(np.max([xperc,yperc]))
+            xyVals = (0,np.max(xyVals_array)) 
+        elif type(xyLim) == 'tuple':
+            xyVals = (xyLim[0],xyLim[1])
+            
+        if 'kde' in plotstyle or 'all' in plotstyle:
+            fig = mpl.pyplot.figure(figsize=(figSize[0],figSize[1]))
+            sns.set_style('white')
+            ax=mpl.pyplot.gca()
+            mpl.rcParams['font.weight'] = 'bold'
+            mpl.rcParams['font.size'] = 1
+            sns.set(font_scale=3)
+            ax.axes.set_xlim([xyVals[0],xyVals[1]])
+            ax.axes.set_ylim([xyVals[0],xyVals[1]])
+            mpl.pyplot.xticks([],fontweight='bold',fontsize=20)
+            mpl.pyplot.yticks([],fontweight='bold',fontsize=20)
+            mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+            mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+            ###
 
-        for num,cond1 in enumerate(taskcombo):
-            t1color = taskcolors[cond1]
-            exec('colors1 = mpl.pyplot.cm.%s(np.linspace(0,1,128))' % taskcmaps[cond1])
-            cond1w = data[cond1]['raww'].copy()
-            cond1b = data[cond1]['rawb'].copy()
+            for num,cond1 in enumerate(taskcombo):
+                t1color = taskcolors[cond1]
+                exec('colors1 = mpl.pyplot.cm.%s(np.linspace(0,1,128))' % taskcmaps[cond1])
+                cond1w = data[cond1]['raww'].copy()
+                cond1b = data[cond1]['rawb'].copy()
 
-            # Mask b/w and w/in values for each condition
-            bothmask = data[cond1]['totmask']*data[cond1]['totmask']
-            cond1w = cond1w[bothmask]
-            cond1b = cond1b[bothmask]
-            #### Edit end:
+                # Mask b/w and w/in values for each condition
+                bothmask = data[cond1]['totmask']*data[cond1]['totmask']
+                cond1w = cond1w[bothmask]
+                cond1b = cond1b[bothmask]
+                #### Edit end:
 
-            bw='scott'
-            gridsize=100
-            cut=10
-            clip = [(-np.inf, np.inf), (-np.inf, np.inf)]
-            legend=True
-            cumulative=False
-            shade=shade
-            shade_lowest=False
-            cbar=False
-            cbar_ax=None
-            filled=True
-            fill_lowest=False
-            vertical=False
-            kernel="gau"
+                bw='scott'
+                gridsize=100
+                cut=10
+                clip = [(-np.inf, np.inf), (-np.inf, np.inf)]
+                legend=True
+                cumulative=False
+                shade=shade
+                shade_lowest=False
+                cbar=False
+                cbar_ax=None
+                filled=True
+                fill_lowest=False
+                vertical=False
+                kernel="gau"
+
+                # Kde distribution:
+                xx1, yy1, z1 = _scipy_bivariate_kde(cond1w, cond1b, bw, gridsize, cut, clip)
+
+                # Scaling and normalization so that field maps are comparable:
+                scaler = float(1000) # Take this out and just make sure line 225 is float
+                z1scale = scaler*z1/np.sum(z1)
+                normalized = (z1scale-np.min(z1scale))/(np.max(z1scale)-np.min(z1scale))
+
+                # Reset clip for actual kdeplot:
+                clip=None
+
+                # Set colorbar for scaled density plot:
+                cbar_kws={'cmap':taskcmaps[cond1]}
+                our_cmap = mpl.pyplot.get_cmap(taskcmaps[cond1])
+                cmap_max = 1.00001
+                norm = mpl.colors.Normalize(vmin=0, vmax=cmap_max)    
+                proxy_mappable = mpl.cm.ScalarMappable(cmap=our_cmap, norm=norm)
+                proxy_mappable.set_array(normalized)   
+                ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, 
+                                        shade_lowest, kernel, bw, gridsize, 
+                                        cut, clip, legend, cbar, cbar_ax, cbar_kws, 
+                                        ax,vmin=0,vmax=cmap_max,levels=5,alpha=alpha,
+                                       linewidths=5)
+                ax.set_aspect('equal')
+                if cbar_option == True:
+                    cbar = mpl.pyplot.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), spacing='proportional', orientation='vertical', pad=.01)
+    #                 if (len(taskcombo) >= 1) & (num == len(taskcombo)-1):
+                    if num == 0:
+                        cbar.set_label('Density',labelpad=20)
+                if 'scatter' in plotstyle or plotstyle == 'all':
+                    fig, ax = mpl.pyplot.subplots(figsize=(figSize[1],figSize[1]))
+                    ax.set_facecolor('white')
+                    mpl.pyplot.scatter(x,y, color=taskcolor,marker='o',s=10,linewidth=1,edgecolor='k',alpha=0.3)
+                    mpl.pyplot.xlim([0,xyVals[1]])
+                    mpl.pyplot.ylim([0,xyVals[1]])
+                    mpl.pyplot.xticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
+                    mpl.pyplot.yticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
+                    mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+                    mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+                    mpl.pyplot.show()      
+            if lines == True:
+                mpl.pyplot.plot([1,0],[1,0],color='black',alpha=0.3,zorder=0)
+                for iccline in [0.2,0.4,0.6,0.8]:
+                    mpl.pyplot.plot([1,0],[iccline,0],color='black',alpha=0.3,zorder=len(taskcombos)+1)
+                    mpl.pyplot.plot([iccline,0],[1,0],color='black',alpha=0.3,zorder=len(taskcombos)+1) 
+            figs[fignum]['kde'] = fig
+            mpl.pyplot.show() 
             
-            # Kde distribution:
-            xx1, yy1, z1 = _scipy_bivariate_kde(cond1w, cond1b, bw, gridsize, cut, clip)
+        if 'scatter' in plotstyle or 'all' in plotstyle:
+            fig, ax = mpl.pyplot.subplots(figsize=(figSize[1],figSize[1]))
+            ax.set_facecolor('white')
+            for num,cond1 in enumerate(taskcombo):
+                t1color = taskcolors[cond1]
+                cond1w = data[cond1]['raww'].copy()
+                cond1b = data[cond1]['rawb'].copy()
+
+                # Mask b/w and w/in values for each condition
+                bothmask = data[cond1]['totmask']*data[cond1]['totmask']
+                x = cond1w[bothmask]
+                y = cond1b[bothmask]
+                mpl.pyplot.scatter(x,y, color=t1color,marker='o',s=10,linewidth=1,edgecolor='k',alpha=scatter_alpha)
             
-            # Scaling and normalization so that field maps are comparable:
-            scaler = float(1000) # Take this out and just make sure line 225 is float
-            z1scale = scaler*z1/np.sum(z1)
-            normalized = (z1scale-np.min(z1scale))/(np.max(z1scale)-np.min(z1scale))
-            
-            # Reset clip for actual kdeplot:
-            clip=None
-            
-            # Set colorbar for scaled density plot:
-            cbar_kws={'cmap':taskcmaps[cond1]}
-            our_cmap = mpl.pyplot.get_cmap(taskcmaps[cond1])
-            cmap_max = 1.00001
-            norm = mpl.colors.Normalize(vmin=0, vmax=cmap_max)    
-            proxy_mappable = mpl.cm.ScalarMappable(cmap=our_cmap, norm=norm)
-            proxy_mappable.set_array(normalized)   
-            ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, 
-                                    shade_lowest, kernel, bw, gridsize, 
-                                    cut, clip, legend, cbar, cbar_ax, cbar_kws, 
-                                    ax,vmin=0,vmax=cmap_max,levels=5,alpha=alpha,
-                                   linewidths=5)
-            ax.set_aspect('equal')
-            if cbar_option == True:
-                cbar = mpl.pyplot.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), spacing='proportional', orientation='vertical', pad=.01)
-#                 if (len(taskcombo) >= 1) & (num == len(taskcombo)-1):
-                if num == 0:
-                    cbar.set_label('Density',labelpad=20)
-            if 'scatter' in plotstyle or plotstyle == 'all':
-                fig, ax = mpl.pyplot.subplots(figsize=(figSize[1],figSize[1]))
-                ax.set_facecolor('white')
-                mpl.pyplot.scatter(x,y, color=taskcolor,marker='o',s=10,linewidth=1,edgecolor='k',alpha=0.3)
-                mpl.pyplot.xlim([0,xyVals[1]])
-                mpl.pyplot.ylim([0,xyVals[1]])
-                mpl.pyplot.xticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
-                mpl.pyplot.yticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
-                mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
-                mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
-                mpl.pyplot.show()      
-        if lines == True:
-            mpl.pyplot.plot([1,0],[1,0],color='black',alpha=0.3,zorder=0)
-            for iccline in [0.2,0.4,0.6,0.8]:
-                mpl.pyplot.plot([1,0],[iccline,0],color='black',alpha=0.3,zorder=len(taskcombos)+1)
-                mpl.pyplot.plot([iccline,0],[1,0],color='black',alpha=0.3,zorder=len(taskcombos)+1) 
-                
-        if outpath == True:
-            print('save as figure')
-#             mpl.pyplot.savefig('../figures/shortpaper/fieldmaps/%s_%s_perc%s_fieldmap_nogsr_front_contour_070121_time_1200-600.png' % (taskcombo[0],taskcombo[1],percnum),dpi=300)
-        mpl.pyplot.show()   
+            mpl.pyplot.xlim([0,xyVals[1]])
+            mpl.pyplot.ylim([0,xyVals[1]])
+            mpl.pyplot.xticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
+            mpl.pyplot.yticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
+            mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+            mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+            figs[fignum]['scatter'] = fig
+            mpl.pyplot.show()
+    return figs

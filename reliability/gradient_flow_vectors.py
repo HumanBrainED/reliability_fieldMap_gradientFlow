@@ -82,9 +82,9 @@ def pah(theta,bin_threshold,vector_cmap,title,outpath):
     if title:
         mpl.pyplot.title(title,pad=10)
     mpl.pyplot.tight_layout()
-    if outpath:
-        mpl.pyplot.savefig('%s' % (outpath),dpi=300)
     mpl.pyplot.show()
+    return ax.figure
+
 
 
             
