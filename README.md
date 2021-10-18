@@ -41,3 +41,13 @@ reliability_FieldMap_gradientFlow/
           |- tutorial_data_pd.npy
 ```
 4. Usage
+```
+x = np.random.rand(100)
+y = np.random.rand(100)
+
+allfigs = plot_field_map(x,y,'red','Reds',alpha=1,lines=True,outpath=False,thr=0.0001,gridsize=100,
+                overlay=False,cbar_option=True,figSize=(12,10),
+                xyLim=95,shade=True,addContourLines=True,
+                plotstyle=['kde','nokde','scatter'],bins=500)
+```
+
