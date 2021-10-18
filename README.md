@@ -1,6 +1,11 @@
 # Variability field map and gradient flow 
 
 1. Clone
+```
+git clone https://github.com/jae7cho/reliability_fieldMap_gradientFlow.git
+cd reliability_fieldMap_gradientFlow
+pip install ./
+```
 
 2. Install
 PyPI
