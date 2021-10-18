@@ -1,5 +1,5 @@
-### cmaps
-#####   * ICC plot colorbar/colormap
+### cmaps/
+#####   * gradientFlowCmap.npy ICC plot colorbar/colormap
 
 ### Glasser2016_labels
 #####   * Parcel labels for Glasser 360 parcellation
