@@ -11,7 +11,7 @@ pip install ./
 PyPI
 
 ```
-pip install reliabilityFMGF
+pip install reliability_fieldMap_gradientFlow
 ```
 
 3. Data organization
