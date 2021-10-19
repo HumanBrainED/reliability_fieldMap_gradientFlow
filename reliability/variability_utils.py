@@ -14,8 +14,7 @@ allparcels = np.r_[pd.read_csv(fpath + '/misc/Glasser2016_labels/181Yeo7matchlh.
                    pd.read_csv(fpath + '/misc/Glasser2016_labels/181Yeo7matchrh.csv').values[1:,2]]
 
 # Load region to vertex mapping to convert 360 parcels to vertices
-plabel = fpath + '/misc/Glasser2016_labels/HCP_MMP_P210_10k.dlabel.nii'
-glasserlabel,(ax1,ax2) = cifti.read(plabel)
+glasserlabel,(ax1,ax2) = cifti.read(fpath + '/misc/Glasser2016_labels/HCP_MMP_P210_10k.dlabel.nii')
 
 # Load 10k gifti surfaces:
 lsurf = read_surface(fpath + '/misc/surfaces/Conte69.L.very_inflated.10k_fs_LR.surf.gii')
