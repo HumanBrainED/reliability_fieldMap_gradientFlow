@@ -10,7 +10,7 @@ setup(name='variabilityFMGF',
       author_email='jae7cho@gmail.com',
       url='https://github.com/jae7cho/reliability_fieldMap_gradientFlow',
       packages=setuptools.find_packages(),
-      install_requires=['numpy','matplotlib','scipy'],
+      install_requires=['numpy','matplotlib','scipy','pandas','nibabel','scikit-learn>0.20.0','brainspace'],
     #   include_package_data=True,
       package_data={'': [
                         'tutorial/example_data/tutorial_data.npy',
