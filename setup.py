@@ -16,8 +16,8 @@ setup(name='variabilityFMGF',
       package_data={'': [
                         'tutorial/example_data/tutorial_data.npy',
                         'misc/cmaps/gradientFlowCmap.npy',
-                        'misc/Yeo7_to_Glasser360_labels/181Yeo7matchlh.csv',
-                        'misc/Yeo7_to_Glasser360_labels/181Yeo7matchrh.csv',
+                        'misc/Glasser2016_labels/181Yeo7matchlh.csv',
+                        'misc/Glasser2016_labels/181Yeo7matchrh.csv',
                         'misc/Glasser2016_labels/HCP_MMP_P210_10k.dlabel.nii',
                         'misc/surfaces/Conte69.L.very_inflated.10k_fs_LR.surf.gii',
                         'misc/surfaces/Conte69.R.very_inflated.10k_fs_LR.surf.gii'
