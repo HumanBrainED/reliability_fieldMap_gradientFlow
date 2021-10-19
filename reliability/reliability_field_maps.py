@@ -5,9 +5,10 @@ import matplotlib as mpl
 import seaborn as sns
 from seaborn.utils import _kde_support
 from six import string_types
-#####################
-# Why is this here
-#####################
+#########################################################################
+# Using older version of seaborn.                                       #
+# Newer have not gone through newer version to include details we want. #
+#########################################################################
 # Calculate KDE for field maps:
 def _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip):
 
