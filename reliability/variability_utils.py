@@ -2,6 +2,7 @@ import os
 import cifti
 import numpy as np
 import pandas as pd
+from brainspace.mesh.mesh_io import read_surface
 
 fpath = os.path.dirname(os.path.abspath(__file__))
 
