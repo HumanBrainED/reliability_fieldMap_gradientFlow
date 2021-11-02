@@ -125,8 +125,8 @@ def plot_field_map(within,between,taskcolor='red',taskcmap='Reds',alpha=1,lines=
     
     # Set X,Y lims:
     if int(xyLim):
-        xperc = np.percentile(x,xyLim)
-        yperc = np.percentile(y,xyLim)
+        xperc = np.percentile(within,xyLim)
+        yperc = np.percentile(between,xyLim)
         xy_lim = np.max([xperc,yperc])
         xyVals = (0,xy_lim)
     elif type(xyLim) == 'tuple':
@@ -139,7 +139,7 @@ def plot_field_map(within,between,taskcolor='red',taskcmap='Reds',alpha=1,lines=
     clip = [(-np.inf, np.inf), (-np.inf, np.inf)]
     
     # Kde distribution:
-    xx, yy, z1 = _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip)
+    xx, yy, z1 = _scipy_bivariate_kde(within, between, bw, gridsize, cut, clip)
 
     # Scaling and normalization so that field maps are comparable:
     z1scale = z1/np.sum(z1)

@@ -70,6 +70,7 @@ def calc_icc_vectors(x0,y0,icc0,x1,y1,icc1,task0name,task1name):
     # Give option:
     # Convert angles from 0 to 180 and 0 to -180 to 0-360:
     newAngle = ang - len(xdiff)*[180]*np.minimum(0,np.sign(xdiff))
+    newAngle[newAngle<0] += 360
     
     df = {'x0': x0,
           'y0': y0,
@@ -89,7 +90,7 @@ def calc_icc_vectors(x0,y0,icc0,x1,y1,icc1,task0name,task1name):
           'task1name': task1name}
     return df
 
-def pah(theta,vector_cmap,title='Gradient Flow Histogram',bin_threshold=5):
+def pah(theta,vector_cmap,bin_threshold=5,title='Gradient Flow Histogram'):
     """
     Plot angular histogram of variability gradient flow vector angles. Displays the frequency of each angle/angle bin of the input.
     
