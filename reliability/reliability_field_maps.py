@@ -55,7 +55,7 @@ def _bivariate_kdeplot(xx, yy, z1scale, filled, fill_lowest,
     label = kwargs.pop("label", None)
     kwargs["cmap"] = cmap
     contour_func = ax.contourf if filled else ax.contour
-    cset = contour_func(xx1, yy1, z1scale, n_levels, **kwargs)
+    cset = contour_func(xx, yy, z1scale, n_levels, **kwargs)
     if filled and not fill_lowest:
         cset.collections[0].set_alpha(0)
     kwargs["n_levels"] = n_levels
@@ -63,9 +63,9 @@ def _bivariate_kdeplot(xx, yy, z1scale, filled, fill_lowest,
         cbar_kws = {} if cbar_kws is None else cbar_kws
         ax.figure.colorbar(cset, cbar_ax, ax, **cbar_kws)
     # Label the axes
-    if hasattr(xx1, "name") and axlabel:
+    if hasattr(xx, "name") and axlabel:
         ax.set_xlabel(x.name)
-    if hasattr(yy1, "name") and axlabel:
+    if hasattr(yy, "name") and axlabel:
         ax.set_ylabel(y.name)
     if label is not None:
         legend_color = cmap(.95) if color is None else color
@@ -191,7 +191,7 @@ def plot_field_map(within,between,taskcolor='red',taskcmap='Reds',alpha=1,lines=
                                linewidths=5)
         ax.set_aspect('equal')
         if addContourLines == True:
-            ax = mpl.pyplot.contour(xx1,yy1,normalized,5,colors = taskcolor)
+            ax = mpl.pyplot.contour(xx,yy,normalized,5,colors = taskcolor)
         if cbar_option == True:
             cbar = mpl.pyplot.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), spacing='proportional', orientation='vertical', pad=.01)
             cbar.set_label('Density',labelpad=20)
@@ -234,7 +234,7 @@ def plot_field_map(within,between,taskcolor='red',taskcmap='Reds',alpha=1,lines=
         figs['scatter'] = fig
         mpl.pyplot.show()
     
-    return xx1,yy1,normalized,figs
+    return xx,yy,normalized,figs
 
 
 
