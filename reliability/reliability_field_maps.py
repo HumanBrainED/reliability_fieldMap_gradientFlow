@@ -208,7 +208,7 @@ def plot_field_map(within,between,taskcolor='red',taskcmap='Reds',alpha=1,lines=
     if 'nokde' in plotstyle or plotstyle == 'all':
         fig, ax = mpl.pyplot.subplots(figsize=(figSize[0],figSize[1]))
         ax.set_facecolor('white')
-        mpl.pyplot.hist2d(within,betweeny, bins=(bins, bins), cmap=taskcmap,density=True)
+        mpl.pyplot.hist2d(within,between, bins=(bins, bins), cmap=taskcmap,density=True)
         mpl.pyplot.xlim([0,xyVals[1]])
         mpl.pyplot.ylim([0,xyVals[1]])
         mpl.pyplot.xticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
