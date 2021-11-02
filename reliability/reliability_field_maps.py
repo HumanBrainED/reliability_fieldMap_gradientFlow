@@ -34,7 +34,7 @@ def _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip):
     return xx, yy, z
 
 # KDE plot function:
-def _bivariate_kdeplot(xx1, yy1, z1scale, filled, fill_lowest,
+def _bivariate_kdeplot(xx, yy, z1scale, filled, fill_lowest,
                        kernel, bw, gridsize, cut, clip,
                        axlabel, cbar, cbar_ax, cbar_kws, ax, **kwargs):
     from seaborn.palettes import color_palette, light_palette, dark_palette, blend_palette
@@ -75,10 +75,51 @@ def _bivariate_kdeplot(xx1, yy1, z1scale, filled, fill_lowest,
             ax.plot([], [], color=legend_color, label=label)
     return ax
 
-def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsize=300,
-                     overlay=False,cbar_option=True,figSize=(12,10),xyLim=95,shade=True,addContourLines=True,
+def plot_field_map(within,between,taskcolor='red',taskcmap='Reds',alpha=1,lines=True,thr=0.0001,gridsize=300,
+                     cbar_option=True,figSize=(12,10),xyLim=95,shade=True,addContourLines=True,
                   plotstyle=['kde'],bins=500):
+    """
+    Plot variability field map using intra- and inter-individual variation estimates. Function utilizes Seaborn KDE calculation using scipy and bivariate contour plot. 
+    Parameters
+    ----------
+    within : ndarray
+        1-D vector of the intra-individual variation estimates
+    between : ndarray
+        1-D vector of the inter-individual variation estimates
+    taskcolor : str
+        Color used for variability field map contour lines and scatter plot markers.
+    taskcmap : str or `~matplotlib.colors.Colormap`
+        Colormap used for variability field map and 2-D histogram plots
+    alpha : int,float
+        The alpha blending value, between 0 (transparent) and 1 (opaque).
+    lines : bool
+        Option to include diagonal lines representing ICC values.
+    thr : float
+        Minimum values for inter- and intra-individual variation to include in the plot(s).
+    gridsize : int
+        Gridsize for the KDE meshgrid.
+    cbar_option : bool
+        Option to include colorbar for the variability KDE and histogram field maps 
+    figSize : tuple
+        Tuple containing figure size values.
+    xyLim : int,tuple
+        If int, the x and y limits will be from 0 to the maximum of the input value percentile of inter- and intra-individual values. Otherwise, mannually set x and y limits can be input as a tuple.
+    shade : bool
+        Option to include shading on the variability field map.
+    addContourLines : bool
+        Option to include colored lines for each contour level on the variability field map. Color set by 'taskcolor'.
+    plotstyle : ndarray
+        1-D array of strings specifying the type of plots to generate: 'kde','nokde','scatter'.
+    bins :
+        Option to set the bins for 2-D histogram plot ('nokde').
     
+    Returns
+    -------
+    xx,yy,normalized,figs : (ndarray, ndarray, ndarray, dict)
+        xx1 and yy1 are components of the meshgrid with cartesian indexing.
+        normalized is the kernel density estimation scaled from 0 to 1 to allow comparisions from plots across different inputs.
+        figs is a dict containing the generated figure object(s).
+    """
     # Output as figure variable
     figs = {}
     
@@ -98,7 +139,7 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
     clip = [(-np.inf, np.inf), (-np.inf, np.inf)]
     
     # Kde distribution:
-    xx1, yy1, z1 = _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip)
+    xx, yy, z1 = _scipy_bivariate_kde(x, y, bw, gridsize, cut, clip)
 
     # Scaling and normalization so that field maps are comparable:
     z1scale = z1/np.sum(z1)
@@ -143,7 +184,7 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
         kernel="gau"   
         
         # KDE plot:
-        ax = _bivariate_kdeplot(xx1, yy1, normalized, shade, 
+        ax = _bivariate_kdeplot(xx, yy, normalized, shade, 
                                 shade_lowest, kernel, bw, gridsize, 
                                 cut, clip, legend, cbar, cbar_ax, cbar_kws, 
                                 ax,vmin=0,vmax=cmap_max,levels=5,alpha=alpha,
@@ -174,8 +215,9 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
         mpl.pyplot.yticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
         mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
         mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
-        cbar = mpl.pyplot.colorbar()
-        cbar.set_label('Density',labelpad=20)
+        if cbar == True:
+            cbar = mpl.pyplot.colorbar()
+            cbar.set_label('Frequency',labelpad=20)
         figs['nokde'] = fig
         mpl.pyplot.show()
         
@@ -197,9 +239,43 @@ def plot_field_map(x,y,taskcolor,taskcmap,alpha,lines,outpath,thr=0.0001,gridsiz
 
 
 # Plot field map for each condition in taskcombos in 1 plot for comparison:
-def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outpath,
+def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha=1,lines=True,
                       cbar_option=True,figSize=(12,10),xyLim=95,
-                     shade=True,thr=0.0001,plotstyle=['kde','scatter'],scatter_alpha=0.2):
+                     shade=True,thr=0.0001,plotstyle=['kde','scatter']):
+    """
+    taskcombos : list
+    data : dict
+        Dictionary containing within, between and mask arrays for each task condition.
+        Ex:
+            task1
+              |__within
+              |__between
+              |__mask
+            task2
+              |__within
+              |__between
+              |__mask
+    taskcolors : dict
+        Dictionary containing the colors to be used for each condition in 'taskcombos'
+    taskcmaps : dict
+        Dictionary containing the colormap to be used for each condition in 'taskcombos'
+    alpha : int
+        The alpha blending value, between 0 (transparent) and 1 (opaque).
+    lines : bool
+        Option to include diagonal lines representing ICC values.
+    cbar_option : bool
+        Option to include colorbar for the variability KDE and histogram field maps 
+    figSize : tuple
+        Tuple containing figure size values.
+    xyLim : int,tuple
+        If int, the x and y limits will be from 0 to the maximum of the input value percentile of inter- and intra-individual values. Otherwise, mannually set x and y limits can be input as a tuple.
+    shade : bool
+        Option to include shading on the variability field map.
+    thr : float
+        Minimum values for inter- and intra-individual variation to include in the plot(s).
+    plotstyle : ndarray
+        1-D array of strings specifying the type of plots to generate: 'kde','scatter'.
+    """
     figs = {}
     for fignum,taskcombo in enumerate(taskcombos):
         figs[fignum] = {}
@@ -320,7 +396,7 @@ def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha,lines,outp
                 bothmask = data[cond1]['totmask']*data[cond1]['totmask']
                 x = cond1w[bothmask]
                 y = cond1b[bothmask]
-                mpl.pyplot.scatter(x,y, color=t1color,marker='o',s=10,linewidth=1,edgecolor='k',alpha=scatter_alpha)
+                mpl.pyplot.scatter(x,y, color=t1color,marker='o',s=10,linewidth=1,edgecolor='k',alpha=0.3)
             
             mpl.pyplot.xlim([0,xyVals[1]])
             mpl.pyplot.ylim([0,xyVals[1]])

@@ -22,12 +22,16 @@ lsurf = read_surface(fpath + '/misc/surfaces/Conte69.L.very_inflated.10k_fs_LR.s
 rsurf = read_surface(fpath + '/misc/surfaces/Conte69.R.very_inflated.10k_fs_LR.surf.gii')
 
 def array2mat(data,nodes):
+    """
+    """
     mat = np.zeros([nodes,nodes])
     mat[np.triu_indices(nodes,1)] = data
     mat += mat.T
     return mat
 
 def parcel2vert(glasserlabel,theta_img):
+    """
+    """
     numverts = glasserlabel.shape[1]
     if len(theta_img.shape) >1:
         numparcels = len(theta_img)

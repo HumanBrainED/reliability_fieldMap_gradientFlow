@@ -3,8 +3,50 @@ import numpy as np
 import matplotlib as mpl
 
 # Calculate normalized vectors for ICC difference across tasks.
-def calc_icc_vectors(x0,y0,icc0,x1,y1,icc1,task1name,task2name):
+def calc_icc_vectors(x0,y0,icc0,x1,y1,icc1,task0name,task1name):
+    """
+    Function to normalize change in ICC using inter- and intra-individual variation. The vector created by inter- and intra-individual variation change from task1 to task0 on the variability field map are rotated until task0 points lie on a diagonal line ([0,1],[0,1]). The angle between the tip of the vector and a horizontal line passing through task0 points are then calculated from 0-360 degrees as the normalized gradeint flow vector angle.
+    Inputs x0, y0, icc0, x1, y1, icc1 should be type ndarray and contain the same amount of elements.
     
+    Parameters
+    ----------
+    x0 : ndarray
+        intra-individual variation values for task 0 
+    y0 : ndarray
+        inter-individual variation values for task 0
+    icc0 : ndarray
+        ICC values for task 0
+    x1 : ndarray
+        intra-individual variation values for task 1 
+    y1 : ndarray
+        intra-individual variation values for task 1 
+    icc1 : ndarray
+        ICC values for task 1
+    task0name : Name of task 0
+    task1name : Name of task 1
+    
+    Returns
+    -------
+    df : dict
+        Dictionary output containing original inputs along with the new normalized vector points (x0_star, y0_star, x1_star, y1_star). Also included are differences of the inter- and intra-individual variation, and ICC values (xdiff, ydiff, dICC) along with the normalized vector angles with respect to a horizontal line (theta0).
+        df = {'x0': x0,
+              'y0': y0,
+              'x1': x1,
+              'y1': y1,
+              'icc0': icc0,
+              'icc1': icc1,
+              'x0_star':x0_n,
+              'y0_star': y0_n,
+              'x1_star':x1_n,
+              'y1_star':y1_n,
+              'xdiff': xdiff,
+              'ydiff': ydiff,
+              'dICC': dICC2,
+              'theta0': newAngle,
+              'task0name': task0name,
+              'task1name': task1name}
+    
+    """
     if icc0 is None and icc1 is None:
         icc0 = b0/(b0+w0)
         icc1 = b1/(b1+w1)
@@ -28,7 +70,6 @@ def calc_icc_vectors(x0,y0,icc0,x1,y1,icc1,task1name,task2name):
     # Give option:
     # Convert angles from 0 to 180 and 0 to -180 to 0-360:
     newAngle = ang - len(xdiff)*[180]*np.minimum(0,np.sign(xdiff))
-    newAngle[newAngle<0] += 360
     
     df = {'x0': x0,
           'y0': y0,
@@ -44,11 +85,31 @@ def calc_icc_vectors(x0,y0,icc0,x1,y1,icc1,task1name,task2name):
           'ydiff': ydiff,
           'dICC': dICC2,
           'theta0': newAngle,
-          'task1name': task1name,
-          'task2name': task2name}
+          'task0name': task0name,
+          'task1name': task1name}
     return df
 
-def pah(theta,bin_threshold,vector_cmap,title,outpath):
+def pah(theta,vector_cmap,title='Gradient Flow Histogram',bin_threshold=5):
+    """
+    Plot angular histogram of variability gradient flow vector angles. Displays the frequency of each angle/angle bin of the input.
+    
+    Parameters
+    ----------
+    theta : ndarray
+        Array of angles to plot in degrees.
+    bin_threshold : int
+        Bin size for angles.
+    vector_cmap : str or `~matplotlib.colors.Colormap`
+        Colormap specifying the color of each angle.
+    title : str
+        Title of figure.
+    outpath : bool
+        Path to save generated figure.
+    Returns
+    -------
+        Generated figure object
+    
+    """
     mpl.rcParams.update(mpl.rcParamsDefault)
     mpl.pyplot.rcParams["axes.edgecolor"] = "0.15"
     mpl.pyplot.rcParams["axes.linewidth"]  = 1.25
