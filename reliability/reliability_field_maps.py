@@ -275,6 +275,10 @@ def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha=1,lines=Tr
         Minimum values for inter- and intra-individual variation to include in the plot(s).
     plotstyle : ndarray
         1-D array of strings specifying the type of plots to generate: 'kde','scatter'.
+    
+    Returns
+    -------
+        Generated figure object
     """
     figs = {}
     for fignum,taskcombo in enumerate(taskcombos):

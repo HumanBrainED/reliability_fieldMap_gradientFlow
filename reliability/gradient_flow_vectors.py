@@ -103,8 +103,6 @@ def pah(theta,vector_cmap,title='Gradient Flow Histogram',bin_threshold=5):
         Colormap specifying the color of each angle.
     title : str
         Title of figure.
-    outpath : bool
-        Path to save generated figure.
     Returns
     -------
         Generated figure object
