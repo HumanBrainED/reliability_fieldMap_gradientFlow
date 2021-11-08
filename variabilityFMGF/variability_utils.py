@@ -21,6 +21,15 @@ glasserlabel,(ax1,ax2) = cifti.read(fpath + '/misc/Glasser2016_labels/HCP_MMP_P2
 lsurf = read_surface(fpath + '/misc/surfaces/Conte69.L.very_inflated.10k_fs_LR.surf.gii')
 rsurf = read_surface(fpath + '/misc/surfaces/Conte69.R.very_inflated.10k_fs_LR.surf.gii')
 
+# Load tutorial dataset:
+def load_tutorial_data():
+    '''
+    Load all data used for tutorial.
+    Usage: data = load_tutorial_data()
+    '''
+    data = np.load('../tutorial/example_data/tutorial_data.npy',allow_pickle=True).item()
+    return data
+
 def array2mat(data,nodes):
     """
     """
