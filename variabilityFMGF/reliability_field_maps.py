@@ -365,26 +365,28 @@ def plot_field_map_overlay(taskcombos,data,taskcolors,taskcmaps,alpha=1,lines=Tr
                                        linewidths=5)
                 ax.set_aspect('equal')
                 if cbar_option == True:
-                    cbar = mpl.pyplot.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), spacing='proportional', orientation='vertical', pad=.01)
-    #                 if (len(taskcombo) >= 1) & (num == len(taskcombo)-1):
                     if num == 0:
+                        cbar = mpl.pyplot.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), 
+                                                   spacing='proportional', orientation='vertical', pad=-.1,
+                                                  shrink = 0.9)
                         cbar.set_label('Density',labelpad=20)
-                if 'scatter' in plotstyle or plotstyle == 'all':
-                    fig, ax = mpl.pyplot.subplots(figsize=(figSize[1],figSize[1]))
-                    ax.set_facecolor('white')
-                    mpl.pyplot.scatter(x,y, color=taskcolor,marker='o',s=10,linewidth=1,edgecolor='k',alpha=0.3)
-                    mpl.pyplot.xlim([0,xyVals[1]])
-                    mpl.pyplot.ylim([0,xyVals[1]])
-                    mpl.pyplot.xticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
-                    mpl.pyplot.yticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
-                    mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
-                    mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
-                    mpl.pyplot.show()      
+                    if num == 1: 
+                        cbar = mpl.pyplot.colorbar(proxy_mappable, boundaries=np.arange(0,cmap_max,.1), 
+                                                   spacing='proportional', orientation='vertical', pad=.1,
+                                                  shrink = 0.9)
+                        cbar.set_ticks([])
+                mpl.pyplot.xlim([0,xyVals[1]])
+                mpl.pyplot.ylim([0,xyVals[1]])
+                mpl.pyplot.xticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
+                mpl.pyplot.yticks(np.round(np.arange(xyVals[0],xyVals[1]*1.1,np.max(xyVals)/4.),4),fontweight='bold',fontsize=15)
+                mpl.pyplot.xlabel('Intra-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
+                mpl.pyplot.ylabel('Inter-individual Variation',labelpad=20,fontweight='bold',fontsize=20)
             if lines == True:
                 mpl.pyplot.plot([1,0],[1,0],color='black',alpha=0.3,zorder=0)
                 for iccline in [0.2,0.4,0.6,0.8]:
                     mpl.pyplot.plot([1,0],[iccline,0],color='black',alpha=0.3,zorder=len(taskcombos)+1)
                     mpl.pyplot.plot([iccline,0],[1,0],color='black',alpha=0.3,zorder=len(taskcombos)+1) 
+            mpl.pyplot.tight_layout()
             figs[fignum]['kde'] = fig
             mpl.pyplot.show() 
             
